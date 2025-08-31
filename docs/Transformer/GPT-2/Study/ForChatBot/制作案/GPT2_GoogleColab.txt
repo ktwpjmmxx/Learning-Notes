@@ -1,0 +1,239 @@
+【コード】
+
+!pip install transformers>=4.21.0
+!pip install torch>=1.12.0
+!pip install tokenizers>=0.12.0
+!pip install datasets
+!pip install gradio  # UI構築用
+!pip install wandb   # 実験管理用
+
+# 追加の有用ライブラリ
+!pip install sentence-transformers  # 意味検索用
+!pip install faiss-cpu             # ベクトル検索用
+!pip install streamlit             # デプロイ用（オプション）
+
+
+【概要】
+
+!pip install gradio
+
+・ブラウザで動くUI（チャット画面など）を簡単に作れるツール。
+・「GPT-2と会話できる画面」を数行で作れる便利ライブラリ。
+
+!pip install wandb
+
+・学習ログやグラフを可視化・保存するクラウドサービス。
+・学習の進行をモニタリングできる（精度、loss曲線など）。
+
+!pip install sentence-transformers
+
+・意味検索・類似度計算に使うライブラリ。
+・応答の品質評価や、会話の関連性チェックに役立つ。
+
+!pip install faiss-cpu
+
+・Facebook製のベクトル検索ライブラリ。
+・大規模な会話履歴やナレッジベースを検索する時に使える。
+
+!pip install streamlit
+
+・デプロイ用のWebアプリ開発フレームワーク。
+・Gradioが「簡単デモ」なら、Streamlitは「ちゃんとしたWebアプリUI」。
+
+【コード2】
+
+class ConversationManager:
+    def __init__(self, max_history=10):
+        self.conversation_history = []
+        self.max_history = max_history
+        self.persona = ""
+        self.current_topic = None
+        
+    def add_message(self, role, message):
+        self.conversation_history.append({
+            'role': role, 
+            'message': message,
+            'timestamp': time.time()
+        })
+        
+        # 履歴長制限
+        if len(self.conversation_history) > self.max_history:
+            self.conversation_history.pop(0)
+    
+    def get_context(self):
+        # コンテキスト文字列の構築
+        context = f"{self.persona}\n\n" if self.persona else ""
+        for msg in self.conversation_history[-5:]:  # 直近5回
+            context += f"{msg['role']}: {msg['message']}\n"
+        return context
+
+【概要】
+
+class ConversationManager:
+    def __init__(self, max_history=10):
+        self.conversation_history = []
+        self.max_history = max_history
+        self.persona = ""
+        self.current_topic = None
+
+・会話を管理するクラスの定義。
+・max_history=10 → 会話履歴を最大10ターンまで保持。
+・会話の履歴をリストで保持する。
+・self.max_history = max_history → 会話履歴の上限を設定。
+・self.current_topic = None → 現在の会話トピック（話題）を追跡するための変数。
+
+
+
+    def add_message(self, role, message):
+        self.conversation_history.append({
+            'role': role, 
+            'message': message,
+            'timestamp': time.time()
+
+・新しい発言を履歴に追加するメソッド。
+
+※発言を辞書形式で保存：
+
+role: "user" or "bot"
+message: 実際の発言内容
+timestamp: 発言時刻
+
+
+if len(self.conversation_history) > self.max_history:
+    self.conversation_history.pop(0)
+
+・履歴が長すぎると古い発言を削除し、最新10件だけ残す。
+・GPT-2の入力長（512トークンなど）の制約を守るため。
+
+【コード】
+
+    def get_context(self):
+        # コンテキスト文字列の構築
+        context = f"{self.persona}\n\n" if self.persona else ""
+        for msg in self.conversation_history[-5:]:  # 直近5回
+            context += f"{msg['role']}: {msg['message']}\n"
+        return context
+
+【概要】
+
+・GPT-2に渡す コンテキスト文字列 を構築する。
+
+context = f"{self.persona}\n\n" if self.persona else ""
+・ペルソナが指定されていたら最初に追加する。
+
+for msg in self.conversation_history[-5:]:
+    context += f"{msg['role']}: {msg['message']}\n"
+
+・会話履歴の直近5ターン分を文字列にまとめる。
+
+◆ConversationManagerの動きの例
+
+・会話履歴は空リスト []
+・上限は3ターンまで。
+
+1.初期化
+cm = ConversationManager(max_history=3)
+
+2.メッセージ追加
+cm.add_message("user", "こんにちは")
+
+履歴➡[
+  {"role": "user", "message": "こんにちは", "timestamp": ...}
+]
+
+
+3.次にボットの発言を追加
+cm.add_message("bot", "やあ！元気？")
+
+
+履歴➡[
+  {"role": "user", "message": "こんにちは", "timestamp": ...},
+  {"role": "bot", "message": "やあ！元気？", "timestamp": ...}
+]
+
+cm.add_message("user", "今日はカレーを作ろうと思う")
+
+[
+  {"role": "user", "message": "こんにちは", ...},
+  {"role": "bot", "message": "やあ！元気？", ...},
+  {"role": "user", "message": "今日はカレーを作ろうと思う", ...}
+]
+
+4.コンテキスト生成
+
+GPT-2 に渡す文字列を作る
+
+print(cm.get_context())
+
+出力される文字列↓
+
+user: こんにちは
+bot: やあ！元気？
+user: 今日はカレーを作ろうと思う
+
+
+【コード】
+
+def create_chat_prompt(persona, conversation_history, user_input):
+    """高品質な応答を生成するためのプロンプト構築"""
+    
+    base_template = """あなたは{persona}です。以下の会話履歴を参考に、自然で一貫性のある応答をしてください。
+
+会話履歴:
+{history}
+
+ユーザー: {user_input}
+アシスタント:"""
+    
+    # 履歴の整形
+    history_text = ""
+    for msg in conversation_history[-4:]:  # 直近4回
+        role = "ユーザー" if msg['role'] == 'user' else "アシスタント"
+        history_text += f"{role}: {msg['message']}\n"
+    
+    return base_template.format(
+        persona=persona,
+        history=history_text,
+        user_input=user_input
+    )
+
+
+【概要】
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
