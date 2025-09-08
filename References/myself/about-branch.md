@@ -1,5 +1,6 @@
 📁 Learning-Notes レポジトリ構成の詳細分析
 🎯 全体構成（転職活動向けに最適化された構造）
+```
 Learning-Notes/
 ├── CHANGELOG.md          # 変更履歴
 ├── README.md             # プロジェクト概要
@@ -11,6 +12,7 @@ Learning-Notes/
 ├── archive/             # 過去の学習記録
 ├── certifications/      # 資格・検定関連
 └── docs/               # プロジェクト文書
+```
 🔍 各フォルダの詳細分析と最適な学習記録
 📂 Diffusion/ - 画像生成AI特化フォルダ
 構成: code/, notes/
