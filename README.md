@@ -17,7 +17,7 @@ GPT-2チャットボット開発、Diffusion画像生成、AI基礎理論を体�
 - 資格取得予定: 生成AIパスポート
 
 ## 📁 フォルダ構成
-
+```
 Learning-Notes/
 ├── GPT/              # GPT系言語モデル学習
 ├── Diffusion/        # 画像生成AI学習
@@ -25,7 +25,7 @@ Learning-Notes/
 ├── References/       # 論文・記事まとめ
 ├── certifications/   # 資格取得記録
 └── docs/            # 学習計画・進捗管理
-
+```
 ## 🌟 ハイライト
 - [GPT-2チャットボット実装](./GPT/notebooks/01_basics/)
 - [Diffusion モデル理論学習](./Diffusion/notes/)
