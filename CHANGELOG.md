@@ -10,6 +10,26 @@
 - 生成AIパスポート資格取得に向けた学習体系の構築
 - AI技術の基礎理論から実用まで幅広くカバーする知識ベース作成
 
+## [2025-09-08]
+
+### Added
+- `certifications/JDLA G-Test/` フォルダを新規作成
+  - G検定試験対策のための学習記録用
+  - `applications-and-cases.md`, `deep-learning-fundamentals.md`, `ethics-and-society.md`,`machine-learning-basics.md` を配置
+
+### Purpose
+- G検定資格取得に向けた学習体系の構築
+
+## [2025-09-09]
+
+### Added
+- `GPT/notebooks/02_chatbot_project/` フォルダを新規作成
+  - GPT2を利用してGoogle_Colabで稼働する小規模なチャットボットを制作するための事前学習
+  - `chatbot_implementation.ipynb`, `gpt2_setup.ipynb`, `gpt2-chatbot(Claude).py`,`interaction_testing.ipynb`, `model_analysis.md`,`GPT2チャットボット構築事前知識調査 - Google ドキュメント.pdf` ,`機能説明.txt`  を配置
+
+### Purpose
+- GPT2を活用したチャットボットの内部における構造・仕組みの解釈を広げる
+
 ## [YYYY-MM-DD]
 
 ### Added
