@@ -98,6 +98,7 @@ class GPT2Chatbot:
         print(f"アテンションヘッド数: {config.n_head}")
         print(f"Transformerブロック数: {config.n_layer}")
         
+        
         # パラメータ数の計算
         total_params = sum(p.numel() for p in self.model.parameters())
         print(f"総パラメータ数: {total_params:,}")

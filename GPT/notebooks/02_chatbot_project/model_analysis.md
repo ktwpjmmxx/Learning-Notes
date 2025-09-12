@@ -326,3 +326,61 @@ if conversation_history:
 else:
     prompt = f"Human: {user_input}\nAI:"
 ```
+
+def _print_model_info(self):
+        """モデルの基本情報を表示"""
+        config = self.model.config
+        
+        print("\n" + "="*60)
+        print("【GPT-2モデル情報】")
+        print("="*60)
+        print(f"実行デバイス: {self.device}")
+        print(f"語彙サイズ: {config.vocab_size:,} トークン")
+        print(f"最大文脈長: {config.n_positions:,} トークン")
+        print(f"隠れ層の次元数: {config.n_embd}")
+        print(f"アテンションヘッド数: {config.n_head}")
+        print(f"Transformerブロック数: {config.n_layer}")
+        
+モデル(事前学習済み)の読み込みと空の設計図を設定↓
+config = self.model.config
+
+事前学習モデルのデフォルト数値
+・vocab_size = 50,257
+・n_positions = 1,024
+・n_embd = 768
+・n_layer = 12
+・n_head = 12
+・bos_token_id
+・eos_token_id = 50256
+・pad_token_id = 50256
+
+### パラメータの確認
+
+ total_params = sum(p.numel() for p in self.model.parameters())
+        print(f"総パラメータ数: {total_params:,}")
+        print("="*60 + "\n")
+
+ **###self.model.parameters()**
+- モデルの 全ての重み（weights）やバイアス（bias） を取得する
+- ここには学習済みの行列やベクトルが入っている
+
+**##p.numel()**
+- パラメータ p の 要素数 を数える
+- 例えば 768 x 768 の行列なら 768*768=589,824 個の値
+
+🔹 tokenize_text の流れ
+
+1. テキストをトークン化
+
+tokens = self.tokenizer.encode(text, return_tensors='pt').to(self.device)
+
+**self.tokenizer.encode**
+- 入力テキストを トークンIDの列 に変換
+- return_tensors='pt'
+**PyTorch の tensor 形式にする（例：tensor([[40, 484, 326, 8415]])）**
+- .to(self.device)
+- CPU / GPU のどちらを使うかに応じて配置
+
+・self.tokenizer は GPT-2 専用のトークナイザー（Byte Pair Encoding, BPE）
+・.encode(text, ...) は入力テキストを トークンIDの列に変換
+
