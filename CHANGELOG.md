@@ -37,7 +37,14 @@
   - AI2027に関する論文
   - 後々要約したものを追加予定
 
-## [YYYY-MM-DD]
+
+### [2025-09-11]
+- Added entries to `.gitignore` to ignore OS and IDE files:
+  - macOS: .DS_Store
+  - VSCode: .vscode/
+  - Python: __pycache__/
+  - Other editor/temporary files
+
 
 ### Added
 - 新しいフォルダ/ファイル作成時
