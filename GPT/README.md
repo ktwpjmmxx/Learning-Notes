@@ -16,16 +16,16 @@
 
 #### `01_basics/`
 GPTとトークナイザーの基礎学習
-- **`gpt_test.ipynb`**: GPTモデルの基本動作確認とテストコード
+- **`gpt_test.md`**: GPTモデルの基本動作確認とテストコード
   - モデルのロードと初期化
   - 基本的なテキスト生成
   - パラメータの確認と調整
-- **`tokenizer_exploration.ipynb`**: トークナイザーの仕組みと動作探索
+- **`tokenizer_exploration.md`**: トークナイザーの仕組みと動作探索
   - 各種トークナイザーの比較
   - エンコード・デコード処理の理解
   - 特殊トークンの扱い
 
-#### `02_chatbot_project/` *(予定)*
+#### `02_chatbot_project/` 
 GPT2を使用した小規模チャットボット開発プロジェクト
 - **`gpt2_setup.ipynb`**: GPT2モデルのセットアップと環境構築
 - **`chatbot_implementation.ipynb`**: チャットボットのメイン実装
@@ -98,7 +98,7 @@ jupyter notebook
 3. **応用実践**: `notebooks/02_chatbot_project/` でのプロジェクト開発
 4. **発展学習**: `notes/finetuning-strategies.md` と実際のファインチューニング
 
-### 学習のコツ
+### 学習のポイント
 - 理論と実践を交互に進める
 - コードは必ず手を動かして実行する
 - 疑問点は即座に調べて理解する
