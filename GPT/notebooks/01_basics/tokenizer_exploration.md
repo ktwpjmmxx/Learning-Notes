@@ -190,6 +190,7 @@ print(encoded)
   'input_ids': tensor([[318, 922, 995, 1702, 30]]),
   'attention_mask': tensor([[1, 1, 1, 1, 1]])
 }
+```
 
 ・input_ids: 各トークンを辞書（語彙）から引いたID列
 ・attention_mask: 「有効なトークン（1）」と「パディング（0）」を区別するマスク
