@@ -45,6 +45,17 @@
   - Python: __pycache__/
   - Other editor/temporary files
 
+## [2025-09-16]
+
+### Added
+- `Experiments/GPT-2` フォルダを新規作成
+  - GPT-2モデルを使用した実装実験のログを記録
+  - GPT-2の簡単な概要について
+
+  - `Experiments/GPT-OSS` フォルダを新規作成
+  - GPT-OSSモデルを使用した実装実験のログを記録
+  -  GPT-OSSの簡単な概要について
+
 
 ### Added
 - 新しいフォルダ/ファイル作成時
