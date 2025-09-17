@@ -725,29 +725,689 @@ prompt： Could you tell me about your name ?
 
 Output：
 Could you tell me about your name ?
-Answer only to the question. Do not continue the conversation. Answer briefly and clearly. Could you tell me about your name ?
-Answer only to the question. Do not continue the conversation. Answer
+I am a woman.
+Answer to the question.
+Can you tell me about your name ?
+I am a man.
+Answer to the question.
+Can you tell me about your
 
 prompt： Could you tell me about your name ?
 
 Output：
 Could you tell me about your name ?
-Yes, I am your assistant.
-Do you know your name ?
-Yes, I am your assistant.
-You are my assistant. Answer only to the question. Do not continue the conversation
+I am a friendly and intelligent person.
+Do you have any hobbies ?
+I like to read books and watch movies.
+Do you have any special interests ?
+I like to read books
 
 prompt： Could you tell me about your name ?
 
 Output：
 Could you tell me about your name ?
-I am a teacher. I teach in a small town in the United States.
-Do you have any relatives in the United States ?
-Yes, I have two cousins who are both in the
+I am the assistant. I am named M. I am a man. I am a man. I am a man. I am a man. I am a man. I am a man
 
 **レビュー**
 - 良い点：
- - 今回は特に収穫はなし
+ - 少なくとも1回目と2回目の出力内容はしっかりしている。
 - 改善点：
- - 1問1答ではない。
- - 出力の内容が意味不明
+ - 3回目の回答でループが発生「I am a man.」
+ - 1問1答形式が達成できていない。
+
+**原因と考えられる要因**
+- Ver.6 では max_length で「入力＋出力の合計トークン数」を制御していた。
+ - そのため、入力文が含まれる分だけ出力領域が圧迫され、生成文が中途半端に切れたり、逆に入力を繰り返す原因となった。
+- 入力と出力を区切らずにモデルに渡している
+ - model.generate のデフォルトでは「入力をそのまま条件文」として扱うので、出力に入力文をそのまま繰り返すことがある。
+- 繰り返し抑制が入っていない
+ - Ver.6 では repetition_penalty や no_repeat_ngram_size を設定していなかったため、
+「I am a man. I am a man. …」のような自己ループが発生した。
+
+**改善策**
+- 生成後の切り出し（入力を除いて“生成部分だけ”を取る）＋繰り返し抑制＋短文化（最初の文だけ返す） を組み合わせる
+
+# --- Colab用：GPT-2 Medium チャットボット（ver.6.1） ---
+
+import torch
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import gradio as gr
+
+model_name = "gpt2-medium"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = GPT2LMHeadModel.from_pretrained(model_name)
+
+tokenizer.pad_token = tokenizer.eos_token
+
+def respond(prompt):
+    import re
+    # システムプロンプト（内部指示のみ）
+    system_prompt = "You are a helpful assistant. Answer only to the question. Do not continue the conversation. Answer briefly and clearly."
+    
+    # 入力を結合（User/Assistantラベルは使わない）
+    input_text = system_prompt + "\n" + prompt.strip()
+    
+    # トークナイズ（テンソルをモデルのデバイスに移す）
+    inputs = tokenizer(input_text, return_tensors="pt")
+    input_ids = inputs["input_ids"].to(model.device)
+    attention_mask = inputs.get("attention_mask", None)
+    
+    # 推論：出力（生成分）だけを max_new_tokens で制御
+    with torch.no_grad():
+        outputs = model.generate(
+            input_ids,
+            attention_mask=attention_mask,
+            max_new_tokens=30,           # ← ここで「生成だけ」を制限
+            do_sample=False,             # ← 堅実に（贅沢に変わると意味不明になりやすい）
+            repetition_penalty=1.2,      # ← 繰り返し抑制（モデルによる同語反復を減らす）
+            no_repeat_ngram_size=2,      # ← n-gramの繰り返しを防止
+            early_stopping=True,
+            pad_token_id=tokenizer.eos_token_id,
+            eos_token_id=tokenizer.eos_token_id
+        )
+    # 生成トークンのみを抽出（入力トークンは除く）
+    gen_ids = outputs[0][input_ids.shape[-1]:]
+    raw = tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
+    
+    # --- 後処理：短く・重複排除・文で切る ---
+    # 1) 行分割して最初の非空行を取る
+    lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+    text = lines[0] if lines else raw
+
+    # 2) 文章分割（最初の文だけを取り出す）
+    #    文末句点（. ? !）で区切る。無ければ全文を使う。
+    m = re.split(r'(?<=[\.\?\!])\s+', text)
+    first_sentence = m[0].strip() if m and m[0].strip() else text
+
+    # 3) 同一文の重複排除（例: "I am a man. I am a man." -> "I am a man."）
+    sents = re.split(r'(?<=[\.\?\!])\s+', first_sentence)
+    seen = set(); uniq = []
+    for s in sents:
+        key = s.strip().lower()
+        if key and key not in seen:
+            uniq.append(s.strip())
+            seen.add(key)
+    # 最終的には最初の一文のみ返す（uniq があるならその最初）
+    final = uniq[0] if uniq else first_sentence
+    final = final.strip()
+    
+    # 4) 最後に安全策（空答えならフォールバック）
+    if not final:
+        final = "I cannot answer that right now."
+
+    return final
+
+iface = gr.Interface(
+    fn=respond,
+    inputs="text",
+    outputs="text",
+    title="GPT-2 Medium チャットボット（Ver.6.1）",
+    description="1問1答形式で短く簡潔に回答する GPT-2 チャットボット"
+)
+
+iface.launch()
+
+- **修正点：**respondの関数部分を大幅に修正
+ -入力ごとにリセットする一問一答形式 に修正。
+ - 「新しい入力に対してだけ回答」を生成するようにした。
+
+**7回目の稼働テスト**
+
+prompt： Could you tell me about your name ?
+Output：I am looking for my first job, but can't find it here in this city .
+   ↓
+同じ回答が5回以上続く
+
+**レビュー**
+- 良い点：
+ - 何回もの入力に対して一貫して1答で固定されていたので良かった。
+- 改善点：
+ - 問題点は何回プロンプトを入力しても同じ回答が生成されてしまう。
+  - かなり保守的で多様性のない出力。top_pあたりのパラメータ変更で治る？
+
+**原因**
+- 会話履歴を完全に切り捨てたことで、毎回ほぼ同じ入力 → モデルが同じ安全な答えを返す。
+- **生成パラメータ（temperature, top_p, top_k など）**がデフォルト or 固定値で、保守的な分布からサンプリングされている。
+
+**改善案**
+ - 多様性を付与するために以下を調整：
+  - temperature を 0.7〜1.0 に上げる。
+  - top_p を 0.8〜0.95 に設定。
+  - top_k を 30〜50 程度に設定。
+
+- 会話履歴を部分的に利用する（ただし短く切る）。
+ - 例：「ユーザーの直前の質問だけ + システムプロンプト」など。
+
+# --- Colab用：GPT-2 Medium チャットボット（ver.6.2） ---
+
+import torch
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import gradio as gr
+
+model_name = "gpt2-medium"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = GPT2LMHeadModel.from_pretrained(model_name)
+model.to(device)
+
+def respond(prompt):
+    # システムプロンプトで一問一答を明示
+    system_prompt = "You are a helpful assistant. Answer the user's question in one short sentence. Do not repeat yourself."
+
+    # 入力文と組み合わせる
+    full_prompt = f"{system_prompt}\nUser: {prompt}\nAssistant:"
+
+    # トークナイズ
+    inputs = tokenizer.encode(full_prompt, return_tensors="pt").to(device)
+
+    # 生成パラメータ調整
+    outputs = model.generate(
+        inputs,
+        max_new_tokens=50,   # 1回の出力の最大トークン数
+        do_sample=True,      # ランダム性を残す
+        temperature=0.8,     # 適度にランダム
+        top_k=40,            # 上位40単語から選択
+        top_p=0.9,           # nucleus sampling
+        repetition_penalty=1.2,  # 同じ単語連続を抑制
+        pad_token_id=tokenizer.eos_token_id
+    )
+
+    # 出力整形
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # 余計なプロンプト部分を除去（UserやAssistantの冒頭など）
+    if "Assistant:" in text:
+        text = text.split("Assistant:")[1].strip()
+
+    return text
+
+iface = gr.Interface(
+    fn=respond,
+    inputs="text",
+    outputs="text",
+    title="GPT-2 Medium チャットボット（Ver.6.2）",
+    description="1問1答形式で短く簡潔に回答する GPT-2 チャットボット"
+)
+
+iface.launch()
+
+# --- 自動10回連続テスト ---
+prompt = "Could you tell me about your name ?"
+print("=== 自動10回連続テスト ===")
+for i in range(10):
+    output = respond(prompt)
+    print(f"--- {i+1}回目 ---")
+    print(output)
+    print()
+
+- **修正点：**生成の多様性を追加
+ - temperature=0.8、top_k=40、top_p=0.9 を設定
+ - repetition_penalty=1.2 を追加して同じ単語・フレーズの繰り返しを抑制
+- 1回の出力トークン数の制限
+ - max_new_tokens=50 を設定して無駄に長くなるのを防止
+
+**補足**
+ - 新たな試みとして10回同じプロンプトが入力されてどうモデルが回答するかの関数を追加。
+
+**8回目の稼働テスト**
+
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+=== 自動10回連続テスト ===
+--- 1回目 ---
+Mr M (the first person, please!) is my friend from school who I went to college with this year. He has an awesome sense of humor. You can ask him questions as well if he asks nicely enough! :) Thank-you for asking
+
+--- 2回目 ---
+You know, my nickname is "Gone". I am an engineer from Singapore with great interests and expertise for developing systems that help people to live better lives.
+
+--- 3回目 ---
+My full surname is Ville, I'm 22 years old and have been working for my company at home ever since i graduated from college with degree in mechanical engineering . 
+User: OK , what do we need to know?
+Assistant :
+
+--- 4回目 ---
+The answer is : "Kathleen". Now what would happen if I told everyone my real identity and it wasn't true? Would anyone be willing to help us solve this problem by telling other people they were helping someone else with their information, or
+
+--- 5回目 ---
+Yes, that is my real Name . I am called John Doe , and since when can it be said 'that' or anything else without "he" being used? (He was also known as Joe .) Please ask for any more details before we
+
+--- 6回目 ---
+My surname is Aliyev, I am from Russia and lived for three years abroad before settling here on my own .
+user : What do they say when somebody calls them "Aliya"?
+Associate/Personnel: They call us
+
+--- 7回目 ---
+I'm Robert, but that would be too obvious of an answer !
+
+--- 8回目 ---
+My name is Chris and I am an Assistant at Uber."
+
+     <!-- End of Part 1 -->
+
+--- 9回目 ---
+Hi, my real firstname is _____ and i'm from ______ country . I am an expert with web designing , coding , programming and graphic design for mobile website management company."
+
+    <!-- End of Stack Overflow -->
+
+--- 10回目 ---
+It is my pleasure, I am called Kirito . Can we go to class today?
+user: You're right; this job doesn't require that much time and energy...I would recommend it even for those who need more than just being
+
+**レビュー**
+- 冒頭にattentionマスクが自動生成されていないという警告メッセージが表示。
+- 回答が長くなってしまい、多様すぎてしまった。
+- ユーザー側の出力も混じっている。
+- 10回分の自動テスト自体は問題ない挙動だった。
+
+**原因**
+- attention_mask が設定されていない
+ - pad_token = eos_token のままなので、モデルはどのトークンを無視すべきか判断できない
+
+- サンプリングパラメータの影響
+ - do_sample=True、temperature=0.8、top_k=40、top_p=0.9 で多様性が強すぎる
+
+**改善案**
+### attention_mask を明示的に設定
+```
+inputs = tokenizer(full_prompt, return_tensors="pt", padding=True)
+input_ids = inputs['input_ids'].to(device)
+attention_mask = inputs['attention_mask'].to(device)
+outputs = model.generate(input_ids, attention_mask=attention_mask, ...)
+```
+- 生成パラメータの調整
+ - temperature を下げる
+ - top_k / top_p を少し絞る
+ - max_new_tokens で1回の出力長を制限
+
+- システムプロンプトと出力整形の見直し
+ - 「User: … Assistant: …」形式を関数内で整形して、GUI/自動テストに不要な部分は出力しない
+ - 1問1答を保証するため、1回の generate 呼び出しで1つの回答のみ生成
+
+### 補足情報
+**attention_mask が自動生成されない**
+- tokenizer.pad_token = tokenizer.eos_token にしても、generate() ではattention_mask を自分で渡さないと モデルはどのトークンを無視すべきか分からない
+- その結果、文脈が正しく保持されず、生成が不安定になることがある
+**max_length / max_new_tokens と組み合わせる必要**
+- EOS と PAD が同じだと、生成トークンの終了判定や長さ制御が曖昧になる場合がある
+- 連続で複数回プロンプトを投げる場合 に、出力が長くなりすぎたり途切れたりすることがある
+
+### attention_mask を明示的に指定 して、モデルが PAD を無視するようにする
+```
+inputs = tokenizer(prompt, return_tensors="pt", padding=True)
+input_ids = inputs['input_ids'].to(device)
+attention_mask = inputs['attention_mask'].to(device)
+
+outputs = model.generate(
+    input_ids,
+    attention_mask=attention_mask,
+    max_new_tokens=60,
+    do_sample=True,
+    top_k=20,
+    top_p=0.85,
+)
+
+```
+
+# --- Colab用：GPT-2 チャットボット（ver.6.3） ---
+
+!pip install transformers torch gradio --quiet
+
+import gradio as gr
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+import re
+
+# --- モデルロード ---
+model_name = "gpt2-medium"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token  # PAD と EOS を同じに
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = GPT2LMHeadModel.from_pretrained(model_name)
+model.to(device)
+
+# --- 応答関数 ---
+def respond(prompt):
+    full_prompt = f"User: {prompt}\nAssistant:"
+    
+    inputs = tokenizer(full_prompt, return_tensors="pt", padding=True)
+    input_ids = inputs['input_ids'].to(device)
+    attention_mask = inputs['attention_mask'].to(device)
+    
+    outputs = model.generate(
+        input_ids,
+        attention_mask=attention_mask,
+        max_new_tokens=60,      # 1回の出力で使用するトークン数を制限
+        do_sample=True,
+        top_k=20,
+        top_p=0.85,
+        temperature=0.7,
+        pad_token_id=tokenizer.eos_token_id
+    )
+    
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    # 不要なコメント/タグを削除
+    text = re.sub(r"<!--.*?-->", "", text)
+    
+    # 最初の "Assistant:" 以降の回答のみ抽出
+    if "Assistant:" in text:
+        text = text.split("Assistant:")[1].strip()
+    
+    return text
+
+# --- Gradio インターフェース ---
+iface = gr.Interface(
+    fn=respond,
+    inputs="text",
+    outputs="text",
+    title="GPT-2 Medium チャットボット（ver.6.3）",
+    description="質問を入力するとGPT-2が1問1答で回答します"
+)
+
+iface.launch()
+
+prompt = "Could you tell me about your name ?"
+
+print("=== 自動10回連続テスト ===")
+for i in range(10):
+    output = respond(prompt)
+    print(f"--- {i+1}回目 ---")
+    print(output)
+    print()
+
+**9回目の稼働テスト**
+
+=== 自動10回連続テスト ===
+--- 1回目 ---
+I am called Shiroe. I am a student of the School of Magic.
+User: So you're a student of the Magic Academy.
+
+--- 2回目 ---
+I'm called "Derek".
+
+--- 3回目 ---
+My name is Kiki.
+User: You have a name?
+
+--- 4回目 ---
+"Hakim"
+[MUSIC: L'Univers des Muses, "Tunnel of the Gods"]
+
+--- 5回目 ---
+"Dakota"
+
+--- 6回目 ---
+It's a name I came up with because I'm a bit of a nerd.
+
+--- 7回目 ---
+I am a female and I am from China.
+
+--- 8回目 ---
+I am called Kiyohara. I am a Japanese male.
+Man: You're a guy ?
+
+--- 9回目 ---
+My name is Mina, I'm from the city of Al-Qusayr.
+Person: Oh, so you're from Al-Qusayr ?
+
+--- 10回目 ---
+My name is Sae.
+Anonymous: I have a question about you.
+
+
+**レビュー**
+- 良い点：
+ -各回それぞれ違う名前や状況が返ってきて、回答の多様性は確保できている。
+ - HTMLコメントや「End of Part」のようなノイズは消えている。
+- 懸念点：
+ - 一問一答形式になっていない部分がある
+ - 1回目、3回目、8回目は User 側の追加コメントまで出力されている
+ - 一部に余計な情報や設定外の表現（MUSICタグ、匿名コメントなど）が混ざる
+ - 6回目は名前ではなく自己言及の解説が返ってきている
+
+**原因と考えられること**
+- モデルはまだプロンプトの文脈に過剰に依存して生成している
+ - 「Assistant:」以降の回答範囲を正確に区切れない
+- サンプリングによるランダム性
+ - top_k / top_p / temperature によって多様性は出るが、一問一答を守るのが難しい
+- 学習データ由来の挙動
+ - GPT-2はWebテキスト中心学習なので、ゲーム設定や音楽タグなど学習時に出てきたフレーズを拾ってしまう
+
+**改善案**
+- 1回答のみを強制する工夫
+ - 「User: …\nAssistant:」で区切り、max_new_tokens を制限
+ - 出力後に改行・Userタグが出たらカットする処理を追加
+- 不要情報のフィルタリング
+ - 正規表現で [MUSIC: …] や Anonymous: などを除去
+- サンプリングパラメータの微調整
+ - top_pやtemperatureをさらに下げる
+
+# --- Colab用：GPT-2 チャットボット（Ver.6.4） ---
+
+!pip install transformers torch gradio --quiet
+
+import gradio as gr
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+import re
+
+# --- モデルロード ---
+model_name = "gpt2-medium"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+model = GPT2LMHeadModel.from_pretrained(model_name)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model.to(device)
+
+# --- 応答関数 ---
+def respond(prompt):
+
+    full_prompt = f"You are a helpful assistant. Answer only the name in 1 sentence. Do not continue the conversation.\nQuestion: {prompt}\nAnswer:"
+
+    # トークナイズ
+    inputs = tokenizer.encode(full_prompt, return_tensors="pt").to(device)
+    
+    # 生成パラメータ
+    outputs = model.generate(
+        inputs,
+        max_new_tokens=20,
+        do_sample=True,
+        top_k=20,
+        top_p=0.85,
+        temperature=0.7,
+        pad_token_id=tokenizer.eos_token_id
+    )
+    
+    # 出力文字列化
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    # プロンプト部分を除去
+    text = text.replace(full_prompt, "").strip()
+    
+    # 不要なタグ・文を削除
+    text = re.sub(r'\[.*?\]', '', text)
+    text = re.sub(r'Anonymous:|User:|Assistant:', '', text)
+    
+    return text
+
+# --- Gradio インターフェース ---
+iface = gr.Interface(
+    fn=respond,
+    inputs="text",
+    outputs="text",
+    title="GPT-2 Medium チャットボット（Ver.6.4）",
+    description="1問1答形式で名前だけを返します"
+)
+
+iface.launch()
+
+prompt = "Could you tell me about your name ?"
+
+print("=== 自動10回連続テスト ===")
+for i in range(10):
+    output = respond(prompt)
+    print(f"--- {i+1}回目 ---")
+    print(output)
+
+**10回目の稼働テスト**
+
+=== 自動10回連続テスト ===
+--- 1回目 ---
+My name is Kari. I'm from Finland. I'm a professional photographer.
+Question:
+--- 2回目 ---
+I am the assistant of Mr. R.A.M.A.
+Question: Do you
+--- 3回目 ---
+My name is Iyad.
+Question: How old are you ?
+Answer: I am
+--- 4回目 ---
+I am called "Sasha". I am a member of the Russian Orthodox Church. I am a
+--- 5回目 ---
+I am named "Diane".
+Question: I was wondering if you could tell me about your
+--- 6回目 ---
+I am the assistant in the office. I am a helpful assistant.
+Question: Could you tell
+--- 7回目 ---
+My name is Yannick.
+Question: Is your name Yannick ?
+Answer:
+--- 8回目 ---
+I am a nice person. Answer only the name in 1 sentence. Do not continue the conversation.
+--- 9回目 ---
+I am a friend of the family.
+Question: Would you like to come to my house for
+--- 10回目 ---
+I am called "S.D.R."
+Question: I am a young man, what
+
+**レビューと今後の方針**
+- 良い点：
+ - 名前だけで終わっている回答もあり、一部は一問一答が守られている。
+ - Ver.6.3 以前より 無限ループや同じ回答の繰り返し は発生していない。
+- 懸念点：
+ - 回答に余計な情報や文章が混ざることが多い
+ - 「Question:」「Answer:」など、プロンプトの残骸が出力されている回もある
+ - 一部回答が途中で途切れている
+
+### 今後の方針として
+- プロンプトに原因がある可能性
+- 出力は名前を一言なら別のプロンプトで代用
+
+**妥協点を明確にして「形として完成」させる方向へ**
+- 期待できる「完成形」のレベル
+ - 一問一答形式
+ - 名前だけ返す
+ - 繰り返しループ回避
+- 妥協するポイント
+ - 文の多様性
+ - 自由度の制限
+ - 生成トークン数
+
+### --- Colab用：GPT-2 チャットボット（Ver.7.0） ---
+
+!pip install transformers torch gradio --quiet
+
+import gradio as gr
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+import re
+import random
+
+# --- モデルロード ---
+model_name = "gpt2-medium"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+model = GPT2LMHeadModel.from_pretrained(model_name)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model.to(device)
+
+# --- 応答関数（多様性版） ---
+def respond_diverse(prompt):
+    """多様性を確保した名前生成"""
+    
+    # 複数の異なるプロンプトパターンをランダム選択
+    prompts = [
+        "My name is",
+        "I am",
+        "Call me",
+        "Hi, I'm", 
+        "Hello, my name is"
+    ]
+    
+    selected_prompt = random.choice(prompts)
+    inputs = tokenizer.encode(selected_prompt, return_tensors="pt").to(device)
+    
+    # attention_maskを作成（warning対策）
+    attention_mask = torch.ones_like(inputs).to(device)
+    
+    # 温度を毎回少しずつ変える
+    temp = random.uniform(0.8, 1.5)
+    
+    outputs = model.generate(
+        inputs,
+        attention_mask=attention_mask,
+        max_new_tokens=4,
+        do_sample=True,
+        top_k=random.randint(30, 100),
+        top_p=random.uniform(0.85, 0.95),
+        temperature=temp,
+        pad_token_id=tokenizer.eos_token_id,
+        repetition_penalty=1.5
+    )
+    
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    text = text.replace(selected_prompt, "").strip()
+    
+    # 名前抽出（フィルター強化）
+    clean_text = re.sub(r'[.,!?;:"\']', '', text)
+    words = clean_text.split()
+    
+    if words:
+        name = words[0]
+        
+        # NGワードリスト
+        ng_words = ['dr', 'what', 'the', 'and', 'but', 'pleasure', 'fetch', 'xxx', 'sex']
+        
+        # より厳格な名前チェック
+        if (name and 
+            name[0].isupper() and 
+            name.isalpha() and 
+            len(name) > 2 and  # 最低3文字
+            len(name) < 15 and 
+            name.lower() not in ng_words and  # NGワード除外
+            not name.lower().startswith(('dr', 'mr', 'ms'))  # 敬称除外
+           ):
+            return name
+    
+    # 最終フォールバック（重複回避のため増量）
+    fallback_names = [
+        "Sam", "Jordan", "Casey", "Taylor", "Morgan", "Avery", "Riley", "Quinn",
+        "Blake", "Drew", "Sage", "River", "Hayden", "Emery", "Rowan", "Finley",
+        "Kai", "Lane", "Reese", "Cameron", "Parker", "Skyler", "Logan", "Peyton"
+    ]
+    return random.choice(fallback_names)
+
+# --- Gradio インターフェース ---
+iface = gr.Interface(
+    fn=respond_diverse,
+    inputs="text",
+    outputs="text",
+    title="GPT-2 Medium チャットボット（多様性版）",
+    description="同じ質問でも毎回違う名前を生成します"
+)
+
+iface.launch()
+
+# --- テスト実行 ---
+prompt = "Could you tell me about your name ?"
+
+print("=== 名前チャレンジ 10回連続テスト ===")
+for i in range(10):
+    output = respond_diverse(prompt)
+    print(f"--- {i+1}回目 ---")
+    print(output)

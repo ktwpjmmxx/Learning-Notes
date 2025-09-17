@@ -56,6 +56,12 @@
   - GPT-OSSモデルを使用した実装実験のログを記録
   -  GPT-OSSの簡単な概要について
 
+## [2025-09-17]
+
+### Added
+- `Experiments/GPT-2/gpt2_chatbot_part1-fin.py`ファイルを追加
+-  `Experiments/GPT-2/GPT_2_ChatBot.ipynb`ファイルを追加
+- GoogleColabでGPT-2を使った簡単な出力を返すチャットボットの完成。
 
 ### Added
 - 新しいフォルダ/ファイル作成時
