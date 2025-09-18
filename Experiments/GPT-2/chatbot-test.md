@@ -1411,3 +1411,67 @@ for i in range(10):
     output = respond_diverse(prompt)
     print(f"--- {i+1}回目 ---")
     print(output)
+
+**修正点**
+
+### 固定のプロンプトから複数のプロンプトからランダムに選択へ変更
+- 本来の目的である名前を出力してもらうという点において後者の選択のほうが良い結果を得られる。
+
+プロンプト除去の問題
+元のコード：
+pythonfull_prompt = f"You are a helpful assistant. Answer only the name in 1 sentence. Do not continue the conversation.\nQuestion: {prompt}\nAnswer:"
+text = text.replace(full_prompt, "").strip()
+問題点：
+
+GPT-2は指示を理解しにくく、プロンプト文がそのまま出力に混入
+replace()が完全一致しないと除去できない
+生成された文章にプロンプトの一部（"Question:"など）が残る
+
+修正後：
+pythonselected_prompt = "My name is"  # シンプルに
+text = text.replace(selected_prompt, "").strip()
+→ 短くて確実に除去できるプロンプトに変更
+フィルタリング厳格化の理由
+元の結果で出た問題例：
+
+"KPleasure" - 変な造語
+"Dr" - 敬称（名前ではない）
+"What" - 疑問詞（名前ではない）
+"Fetch" - 動詞（名前らしくない）
+
+修正前の甘いフィルター：
+pythonif name and name[0].isupper() and name.isalpha() and len(name) > 1:
+→ 大文字で始まるアルファベットなら何でもOK
+修正後の厳格フィルター：
+pythonng_words = ['dr', 'what', 'the', 'and', 'but', 'pleasure', 'fetch']
+if (name and 
+    name[0].isupper() and 
+    name.isalpha() and 
+    len(name) > 2 and  # 最低3文字（"Dr"除外）
+    len(name) < 15 and 
+    name.lower() not in ng_words and  # NGワード除外
+    not name.lower().startswith(('dr', 'mr', 'ms'))  # 敬称除外
+   ):
+なぜ厳格化が必要だったか：
+
+GPT-2の特性 - 指示に従わず関係ない単語も生成する
+名前らしさの判定 - 単純な条件だけでは不適切な単語が通る
+ユーザー体験 - 変な出力があると「失敗」に見える
+GPT-2多様性チャットボット完全版コード # --- Colab用：GPT-2 チャットボット（完全版） ---
+
+!pip install transformers torch gradio --quiet
+
+import gradio as gr
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+import re
+import random
+
+# --- モデルロード ---
+model_name = "gpt2-medium"
+tokeniz修正のポイントまとめ：
+
+プロンプト簡素化 - 複雑な指示→シンプルな開始文
+ランダム化 - 固定パラメータ→毎回変化で多様性確保
+厳格フィルター - 単純条件→多段階チェックで品質向上
+フォールバック強化 - 少ない選択肢→豊富な代替案

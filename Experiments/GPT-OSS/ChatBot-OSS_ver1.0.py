@@ -1,33 +1,3 @@
-# GPT-OSS Chatbot（Google Colab + Gradio GUI + ファインチューニング取扱説明書）
-
-## 1. 概要
-
-このプロジェクトは、**Google Colab 上で稼働する GPT-OSS ベースのチャットボット** を構築することを目的としています。  
-ユーザーが入力したプロンプトに対して自動的に応答を生成し、Gradioを用いてGUIで可視化します。  
-
-特徴:
-- GPT-OSS 互換モデルを利用可能（例: `"gpt-oss/gpt2-mini"` など）
-- Colab GPU上で動作
-- モデルの選択が可能
-- 1問1答形式で上に過去の会話が更新される形式
-- 上部で出力の表現幅を調整可能
-
----
-
-## 2.  GPT-OSS Chatbot 制作記録 (進行中)
-
-```python
-# 1. パッケージインストール
-!pip install torch transformers ipywidgets accelerate
-
-# 2. ウィジェット有効化  
-from google.colab import output
-output.enable_custom_widget_manager()
-
-# 3. GPU設定（推奨）
-# Runtime → Change runtime type → Hardware accelerator: GPU
-
-# 4. コード本体
 import os
 import json
 import time
@@ -233,8 +203,8 @@ class GPTOSSChatbot:
             description="Clear Chat 🗑️", button_style='warning'
         )
         
-        # Event handlers
-        self.send_button.on_click(self.send_message)
+        # Event handlers - Fixed version without threading
+        self.send_button.on_click(self.fixed_send_message)
         self.message_input.observe(self.on_enter_key, names='value')
         self.clear_button.on_click(self.clear_chat)
         self.model_selector.observe(self.on_model_change, names='value')
@@ -279,7 +249,7 @@ class GPTOSSChatbot:
         
         # Initialize chat
         self.display_welcome_message()
-        
+    
     def display_welcome_message(self):
         """Display welcome message"""
         welcome_html = """
@@ -374,12 +344,12 @@ class GPTOSSChatbot:
             if not torch.cuda.is_available():
                 self.model = self.model.to(device)
             
-            # Create text generation pipeline
+            # Create text generation pipeline (no device argument for accelerate)
             self.generator = pipeline(
                 "text-generation",
                 model=self.model,
-                tokenizer=self.tokenizer,
-                device=0 if torch.cuda.is_available() else -1
+                tokenizer=self.tokenizer
+                # device argument removed - accelerate handles device placement automatically
             )
             
             self.model_loaded = True
@@ -390,47 +360,28 @@ class GPTOSSChatbot:
             self.model_loaded = False
             raise e
     
-    def show_typing_indicator(self):
-        """Show typing indicator"""
-        typing_html = """
-        <div class="message bot-message typing-indicator">
-            <div class="message-bubble bot-bubble">
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <span style="margin-left: 10px;">thinking...</span>
-            </div>
-        </div>
-        """
-        
-        with self.chat_output:
-            display(HTML(typing_html))
-    
-    def hide_typing_indicator(self):
-        """Remove typing indicator"""
-        # In a real implementation, you'd track and remove the specific typing message
-        pass
-    
     def on_enter_key(self, change):
         """Handle Enter key press (Shift+Enter for new line)"""
         # Note: This is a simplified version. In Colab, you might need to use different approach
         pass
     
     def generate_response(self, prompt: str) -> str:
-        """Generate response using the loaded model"""
+        """Generate response using the loaded model - Improved version"""
         if not self.model_loaded:
             return "❌ Please load a model first by selecting one above and clicking 'Load Model'!"
         
         try:
             # Update model parameters from sliders
-            self.model_params['temperature'] = self.temperature_slider.value
+            self.model_params['temperature'] = max(0.7, self.temperature_slider.value)  # Minimum 0.7
             self.model_params['max_length'] = self.max_length_slider.value
             
-            # Prepare conversation context for DialoGPT-style models
-            if "DialoGPT" in self.model_name:
-                # For DialoGPT, we build conversation context
+            # More effective prompt creation
+            if "name" in prompt.lower():
+                input_text = f"User asks about my name. I should introduce myself as a helpful AI chatbot.\nUser: {prompt}\nAI: Hello! I'm"
+            elif "who are you" in prompt.lower():
+                input_text = f"User asks who I am. I should explain I'm an AI assistant.\nUser: {prompt}\nAI: I'm"
+            elif "DialoGPT" in self.model_name:
+                # For DialoGPT, build conversation context
                 conversation_string = ""
                 for msg in self.conversation_history[-3:]:  # Last 3 exchanges for context
                     if msg["role"] == "user":
@@ -441,13 +392,13 @@ class GPTOSSChatbot:
                 conversation_string += f"User: {prompt}\nBot:"
                 input_text = conversation_string
             else:
-                # For GPT-2 style models, use simpler approach
-                input_text = f"Human: {prompt}\nAI:"
+                # For GPT-2 style models
+                input_text = f"Having a friendly conversation.\nUser: {prompt}\nAI:"
             
             # Generate response
             outputs = self.generator(
                 input_text,
-                max_length=min(len(self.tokenizer.encode(input_text)) + self.model_params['max_length'], 1024),
+                max_length=min(len(self.tokenizer.encode(input_text)) + 150, 800),
                 temperature=self.model_params['temperature'],
                 top_p=self.model_params['top_p'],
                 do_sample=self.model_params['do_sample'],
@@ -459,37 +410,39 @@ class GPTOSSChatbot:
             response = outputs[0]['generated_text'].strip()
             
             # Clean up response
+            clean_patterns = ["User:", "AI:", "Human:", "Bot:", input_text]
+            for pattern in clean_patterns:
+                response = response.replace(pattern, "").strip()
+            
             if "DialoGPT" in self.model_name:
                 # For DialoGPT, extract just the bot response
                 if "Bot:" in response:
                     response = response.split("Bot:")[-1].strip()
                 if "User:" in response:
                     response = response.split("User:")[0].strip()
-            else:
-                # For GPT-2, clean up
-                if "Human:" in response:
-                    response = response.split("Human:")[0].strip()
-                if "AI:" in response:
-                    response = response.split("AI:")[-1].strip()
             
-            # Add some personality if response is too short or generic
-            if len(response.split()) < 3 or response.lower() in ["yes", "no", "ok", "sure"]:
-                personality_additions = [
-                    "Let me elaborate on that with some wit! 😄",
-                    "Here's my take with a dash of humor: ",
-                    "Allow me to add some creative flair: ",
-                    "With a sprinkle of personality, I'd say: "
-                ]
-                import random
-                response = random.choice(personality_additions) + response
+            # Improved short response handling
+            if len(response.split()) < 5:
+                if "name" in prompt.lower():
+                    response = "I'm an AI chatbot designed to have engaging conversations! I don't have a specific name, but you can call me whatever you'd like. What would you like to talk about?"
+                elif "who are you" in prompt.lower():
+                    response = "I'm an AI assistant running locally in your Colab environment. I'm here to chat, help answer questions, and have interesting conversations with you!"
+                else:
+                    creative_responses = [
+                        f"That's an interesting question about '{prompt[:30]}...' Let me give you a thoughtful response!",
+                        f"Great question! Here's what I think about that topic...",
+                        f"I'd love to elaborate on that! Let me share my thoughts..."
+                    ]
+                    import random
+                    response = random.choice(creative_responses)
             
             return response
             
         except Exception as e:
-            return f"🤖 Oops! My neural networks got tangled. Error: {str(e)}. Let me try to untangle them! 🧠✨"
+            return f"🤖 I encountered an error: {str(e)}. Let me try to help you anyway! What specific topic interests you?"
     
-    def send_message(self, button):
-        """Handle sending a message"""
+    def fixed_send_message(self, button):
+        """Fixed send_message without threading issues"""
         message = self.message_input.value.strip()
         
         if not message:
@@ -508,30 +461,23 @@ class GPTOSSChatbot:
             "timestamp": datetime.now()
         })
         
-        # Show typing indicator
-        self.show_typing_indicator()
-        
-        # Get bot response in a separate thread to avoid blocking UI
-        def get_response():
-            try:
-                response = self.generate_response(message)
-                
-                # Add bot response to display
-                self.add_message_to_chat(response, "bot")
-                
-                # Add to conversation history
-                self.conversation_history.append({
-                    "role": "assistant",
-                    "content": response,
-                    "timestamp": datetime.now()
-                })
-                
-            except Exception as e:
-                error_msg = f"Sorry, I encountered an error: {str(e)} 😔"
-                self.add_message_to_chat(error_msg, "bot")
-        
-        # Run in thread (in real Colab, you might handle this differently)
-        threading.Thread(target=get_response, daemon=True).start()
+        # Generate response directly (no threading to avoid UI issues)
+        try:
+            response = self.generate_response(message)
+            
+            # Add bot response to display
+            self.add_message_to_chat(response, "bot")
+            
+            # Add to conversation history
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.now()
+            })
+            
+        except Exception as e:
+            error_msg = f"Sorry, I encountered an error: {str(e)} 😔"
+            self.add_message_to_chat(error_msg, "bot")
     
     def add_message_to_chat(self, message: str, sender: str):
         """Add a message to the chat display"""
@@ -596,11 +542,13 @@ def setup_gpt_oss_chatbot():
     print("🧹 Clear chat functionality")
     print("🌐 Optimized for English conversations")
     print("💾 GPU acceleration support")
+    print("🔧 Threading issues resolved")
     print("\n💡 Pro Tips:")
     print("- DialoGPT models are optimized for conversations")
     print("- Higher temperature = more creative responses")
     print("- First model load may take 2-5 minutes")
     print("- Use GPU for faster inference")
+    print("- Fixed version eliminates 'thinking...' hanging issues")
     
     return chatbot
 
@@ -619,67 +567,3 @@ if __name__ == "__main__":
     
     # Alternative: Quick start with default model
     # chatbot = quick_start()
-
-# 5. チャットボット起動
-chatbot = setup_gpt_oss_chatbot()
-```
-
-### 日付: 2025-09-18
-
-### 発生したエラーまとめ
-
-#### エラー 1: accelerateライブラリ競合
-1. **内容**  
-- ValueError: The model has been loaded with accelerate and therefore cannot be moved to a specific device
-2. **原因**  
-- pipeline作成時にdevice引数を指定したが、accelerateが自動でデバイス管理するため競合
-3. **対応** 
-- pipelineからdevice=0 if torch.cuda.is_available() else -1引数を削除
----
-#### エラー2 ：thinking無限ループ
-1. **内容**  
-- UIに「thinking...」が表示されたまま応答が出力されない
-2. **原因**  
-- threading.Thread内でエラーが発生し、hide_typing_indicator()が呼ばれずタイピングインジケーターが残存
-3. **対応**  
-- fixed_send_messageでスレッド処理を削除し、直接実行に変更
----
-#### エラー3 ：AttributeErrorでdatetime未定義
-1. **内容**  
-- AttributeError: 'GPTOSSChatbot' object has no attribute 'datetime'
-2. **原因**  
-- chatbot.datetime.now()と書いたが、正しくはdatetime.now()
-3. **対応**  
-- from datetime import datetimeをインポートし、直接datetime.now()に修正
----
-#### エラー4 ：応答内容が不適切
-1. **内容**  
-- 名前を聞いたのに「No.」だけ返答、意味不明な出力
-2. **原因**  
-- DialoGPTの短い応答 + 不適切なクリーニング処理
-3. **対応**  
-- generate_responseを改良、プロンプト改善、短応答時のフォールバック機能追加
----
-#### エラー5 ：Sendボタンイベントが更新されない
-1. **内容**  
-- 修正版関数を適用してもSendボタンが古い処理を実行
-2. **原因**  
-- on_clickの重複バインドで古いイベントハンドラーが残存
-3. **対応**  
-- _click_handlers.callbacks[:] = []で古いハンドラーを完全削除後、新しいハンドラーを設定
----
-#### エラー6 ：パラメータ警告
-1. **内容**  
-- Both max_new_tokens and max_length seem to have been set. max_new_tokens will take precedence
-2. **原因**  
-- transformersライブラリの仕様変更で新旧パラメータの競合
-3. **対応**  
-- 警告は機能に影響しないため無視、必要に応じてmax_new_tokensに統一可能
----
-
-**残の問題点**
-- 同じ言い回しの回答が繰り返される
- - Temperature調整
- - Top-p設定の見直し
-- モデル状態表記や設定パネルがチャット履歴と一緒にスクロールしてしまう
- - 固定ヘッダー: 設定パネルをposition: fixedでトップ固定
