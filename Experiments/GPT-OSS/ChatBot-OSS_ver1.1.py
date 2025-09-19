@@ -28,45 +28,22 @@ class GPTOSSChatbot:
         }
         
         self.setup_ui()
-        self.load_model_async()
+        self.load_model_sync()
         
     def setup_ui(self):
         """Setup the chat interface with custom styling"""
         # Custom CSS for beautiful chat interface
         chat_css = """
         <style>
-        /* 固定ヘッダー */
-        .fixed-header {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: white;
-          padding: 10px;
-          border-bottom: 2px solid #e1e8ed;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-         /* チャット領域のみスクロール */
-        .chat-area {
-          height: 400px;
-          overflow-y: auto;
-          border: 2px solid #e1e8ed;
-          border-radius: 15px;
-          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-          padding: 20px;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-          margin: 10px 0;
-        }
-
-        /* 入力エリア固定 */
-        .input-area {
-           position: sticky;
-           bottom: 0;
-           background: white;
-           padding: 10px;
-           border-top: 1px solid #e1e8ed;
-           z-index: 99;
+        .chat-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
         .message {
@@ -119,42 +96,6 @@ class GPTOSSChatbot:
             margin-top: 5px;
         }
         
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-        }
-        
-        .typing-dots {
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .typing-dots span {
-            height: 8px;
-            width: 8px;
-            background-color: #667eea;
-            border-radius: 50%;
-            display: inline-block;
-            margin: 0 2px;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-        
-        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-        
-        .input-container {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: stretch;
-        }
-        
         .settings-panel {
             background: rgba(255,255,255,0.9);
             border-radius: 10px;
@@ -182,7 +123,7 @@ class GPTOSSChatbot:
             layout=widgets.Layout(width='18%', height='80px')
         )
         
-        # Settings panel
+        # Settings panel widgets
         self.temperature_slider = widgets.FloatSlider(
             value=0.9, min=0.1, max=2.0, step=0.1,
             description='Creativity:', style={'description_width': 'initial'}
@@ -219,7 +160,7 @@ class GPTOSSChatbot:
         )
         
         self.model_status = widgets.HTML(
-            value="<span style='color: orange;'>⏳ Model not loaded</span>"
+            value="<span style='color: orange;'>⏳ Model loading...</span>"
         )
         
         self.clear_button = widgets.Button(
@@ -234,48 +175,30 @@ class GPTOSSChatbot:
         self.load_model_button.on_click(self.load_model_button_click)
         
         # Layout
-        model_controls = widgets.VBox([
+        settings_panel = widgets.VBox([
+            widgets.HTML("<b>🤖 Model Selection</b>"),
             self.model_selector,
             self.custom_model_input,
-            widgets.HBox([self.load_model_button, self.model_status])
-        ])
-        
-        settings_panel = widgets.HBox([
-            widgets.VBox([
-                widgets.HTML("<b>🤖 Model Selection</b>"),
-                model_controls
-            ]),
-            widgets.VBox([
-                widgets.HTML("<b>⚙️ Generation Settings</b>"),
-                self.temperature_slider,
-                self.max_length_slider
-            ]),
-            widgets.VBox([
-                widgets.HTML("<b>🎮 Controls</b>"),
-                self.clear_button
-            ])
-        ])
+            widgets.HBox([self.load_model_button, self.model_status]),
+            widgets.HTML("<b>⚙️ Generation Settings</b>"),
+            self.temperature_slider,
+            self.max_length_slider,
+            widgets.HTML("<b>🎮 Controls</b>"),
+            self.clear_button
+        ], layout=widgets.Layout(margin='0 0 20px 0'))
         
         input_container = widgets.HBox([
             self.message_input,
             self.send_button
         ])
         
-        self.chat_output.layout = widgets.Layout(
-            height='400px',
-            overflow='auto'
-        )
-        
         self.main_container = widgets.VBox([
-            widgets.HTML('<div class="fixed-header">'),
+            widgets.HTML("<h2 style='text-align: center; color: #333;'>🤖 GPT-OSS Chatbot</h2>"),
             settings_panel,
-            widgets.HTML('</div>'),
-            widgets.HTML('</div class="chat-area">'),
+            widgets.HTML('<div class="chat-container">'),
             self.chat_output,
             widgets.HTML('</div>'),
-            widgets.HTML('<div class="input-area">'),
             input_container
-            widgets.HTML('</div>')
         ])
         
         # Initialize chat
@@ -288,7 +211,6 @@ class GPTOSSChatbot:
             <div class="message-bubble bot-bubble">
                 <div>👋 Hello! I'm your local GPT-OSS powered chatbot running directly in Colab!</div>
                 <div>🎯 I can engage in witty conversations once a model is loaded.</div>
-                <div>⚡ Select a model above and click 'Load Model' to get started!</div>
                 <div class="timestamp">Ready to chat • {}</div>
             </div>
         </div>
@@ -296,6 +218,8 @@ class GPTOSSChatbot:
         
         with self.chat_output:
             display(HTML(welcome_html))
+            
+        self.update_model_status("⏳ Loading model…", "orange")
     
     def on_model_change(self, change):
         """Handle model selection change"""
@@ -305,29 +229,28 @@ class GPTOSSChatbot:
             self.custom_model_input.layout.display = 'none'
     
     def load_model_button_click(self, button):
-        """Handle load model button click"""
-        model_name = self.model_selector.value
-        if model_name == 'custom':
-            model_name = self.custom_model_input.value.strip()
-            if not model_name:
+          """Handle load model button click"""
+          model_name = self.model_selector.value
+          if model_name == 'custom':
+             model_name = self.custom_model_input.value.strip()
+          if not model_name:
                 self.update_model_status("❌ Please enter a custom model name", "red")
                 return
-        
-        self.model_name = model_name
-        self.load_model_async()
+
+          self.model_name = model_name
+          self.load_model_sync()
+
     
-    def load_model_async(self):
-        """Load model asynchronously"""
-        self.update_model_status("⏳ Loading model... This may take a few minutes", "orange")
-        
-        def load_model():
-            try:
-                self.load_model()
-                self.update_model_status("✅ Model loaded successfully!", "green")
-            except Exception as e:
-                self.update_model_status(f"❌ Error loading model: {str(e)}", "red")
-        
-        threading.Thread(target=load_model, daemon=True).start()
+    def load_model_sync(self):
+       """Load model synchronously to ensure status updates"""
+       self.update_model_status("⏳ Loading model... This may take a few minutes", "orange")
+    
+       try:
+            self.load_model()  # モデルロード本体
+            self.update_model_status("✅ Model loaded successfully!", "green")
+       except Exception as e:
+            self.update_model_status(f"❌ Error loading model: {str(e)}", "red")
+
     
     def update_model_status(self, message, color):
         """Update model status display"""
@@ -414,7 +337,7 @@ class GPTOSSChatbot:
             elif "DialoGPT" in self.model_name:
                 # For DialoGPT, build conversation context
                 conversation_string = ""
-                for msg in self.conversation_history[-3:]:  # Last 3 exchanges for context
+                for msg in self.conversation_history[-6:]:  # Last 6 exchanges for context
                     if msg["role"] == "user":
                         conversation_string += f"User: {msg['content']}\n"
                     else:
@@ -435,13 +358,15 @@ class GPTOSSChatbot:
                 do_sample=self.model_params['do_sample'],
                 pad_token_id=self.model_params['pad_token_id'],
                 num_return_sequences=1,
-                return_full_text=False
+                return_full_text=True,
+                repetition_penalty=1.2,
+                no_repeat_ngram_size=3
             )
             
             response = outputs[0]['generated_text'].strip()
             
             # Clean up response
-            clean_patterns = ["User:", "AI:", "Human:", "Bot:", input_text]
+            clean_patterns = ["User:", "AI:", "Human:", "Bot:"]
             for pattern in clean_patterns:
                 response = response.replace(pattern, "").strip()
             
@@ -451,21 +376,6 @@ class GPTOSSChatbot:
                     response = response.split("Bot:")[-1].strip()
                 if "User:" in response:
                     response = response.split("User:")[0].strip()
-            
-            # Improved short response handling
-            if len(response.split()) < 5:
-                if "name" in prompt.lower():
-                    response = "I'm an AI chatbot designed to have engaging conversations! I don't have a specific name, but you can call me whatever you'd like. What would you like to talk about?"
-                elif "who are you" in prompt.lower():
-                    response = "I'm an AI assistant running locally in your Colab environment. I'm here to chat, help answer questions, and have interesting conversations with you!"
-                else:
-                    creative_responses = [
-                        f"That's an interesting question about '{prompt[:30]}...' Let me give you a thoughtful response!",
-                        f"Great question! Here's what I think about that topic...",
-                        f"I'd love to elaborate on that! Let me share my thoughts..."
-                    ]
-                    import random
-                    response = random.choice(creative_responses)
             
             return response
             
@@ -549,7 +459,7 @@ class GPTOSSChatbot:
 def setup_gpt_oss_chatbot():
     """Setup and launch the GPT-OSS chatbot"""
     
-    print("🚀 Setting up Local GPT-OSS Chatbot for Google Colab...")
+    print("🚀 Setting up GPT-OSS Chatbot for Google Colab...")
     print("📋 Setup Instructions:")
     print("1. Install required packages:")
     print("   !pip install torch transformers ipywidgets accelerate")
@@ -564,8 +474,8 @@ def setup_gpt_oss_chatbot():
     chatbot = GPTOSSChatbot()
     chatbot.display()
     
-    print("\n✅ Chatbot Interface Ready! Features:")
-    print("🎨 Beautiful left-right chat layout")
+    print("\n✅ Chatbot Interface Ready! Working Features:")
+    print("🎨 Beautiful chat layout with message bubbles")
     print("🤖 Multiple model options (DialoGPT, GPT-2)")
     print("⚡ Runs directly in Colab (no API needed)")
     print("🧠 Adjustable creativity and response length")
@@ -575,11 +485,10 @@ def setup_gpt_oss_chatbot():
     print("💾 GPU acceleration support")
     print("🔧 Threading issues resolved")
     print("\n💡 Pro Tips:")
+    print("- Wait for '✅ Model loaded successfully!' before chatting")
     print("- DialoGPT models are optimized for conversations")
     print("- Higher temperature = more creative responses")
-    print("- First model load may take 2-5 minutes")
     print("- Use GPU for faster inference")
-    print("- Fixed version eliminates 'thinking...' hanging issues")
     
     return chatbot
 
