@@ -358,24 +358,17 @@ class GPTOSSChatbot:
                 do_sample=self.model_params['do_sample'],
                 pad_token_id=self.model_params['pad_token_id'],
                 num_return_sequences=1,
-                return_full_text=True,
+                return_full_text=False,
                 repetition_penalty=1.2,
                 no_repeat_ngram_size=3
             )
             
             response = outputs[0]['generated_text'].strip()
             
-            # Clean up response
-            clean_patterns = ["User:", "AI:", "Human:", "Bot:"]
-            for pattern in clean_patterns:
-                response = response.replace(pattern, "").strip()
-            
             if "DialoGPT" in self.model_name:
                 # For DialoGPT, extract just the bot response
                 if "Bot:" in response:
                     response = response.split("Bot:")[-1].strip()
-                if "User:" in response:
-                    response = response.split("User:")[0].strip()
             
             return response
             
