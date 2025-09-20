@@ -125,12 +125,12 @@ class GPTOSSChatbot:
         
         # Settings panel widgets
         self.temperature_slider = widgets.FloatSlider(
-            value=0.9, min=0.1, max=2.0, step=0.1,
+            value=0.5, min=0.1, max=2.0, step=0.1,
             description='Creativity:', style={'description_width': 'initial'}
         )
         
         self.max_length_slider = widgets.IntSlider(
-            value=512, min=50, max=1000, step=50,
+            value=80, min=50, max=1000, step=50,
             description='Max Length:', style={'description_width': 'initial'}
         )
         
