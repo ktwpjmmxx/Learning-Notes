@@ -63,6 +63,19 @@
 -  `Experiments/GPT-2/GPT_2_ChatBot.ipynb`ファイルを追加
 - GoogleColabでGPT-2を使った簡単な出力を返すチャットボットの完成。
 
+## [2025-10-03]
+
+### Added
+- `Whisper/` フォルダを新規作成
+  - OpenAI Whisperを使った音声認識AIの学習記録を管理
+  - `README.md` を配置し、学習目的・フォルダ構成・進捗管理を記載
+  - `notebooks/`, `notes/`, `code/`, `audio_samples/` のサブフォルダ構成を定義
+
+### Purpose
+- Whisperの基本的な仕組みとアーキテクチャの理解
+- 音声認識・文字起こし技術の実装スキル習得
+- ファインチューニングやリアルタイム音声認識の実践
+
 ### Added
 - 新しいフォルダ/ファイル作成時
 - 学習トピックの追加時
