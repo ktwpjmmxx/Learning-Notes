@@ -61,6 +61,13 @@ Learning-Notes/
 │
 ├── thoughts/             # 学習中の気づき・アイデアメモ
 │
+├── Whisper
+│   ├── audio_samples/    # テスト用音声ファイル
+│   ├── code/             # サンプルコード  
+│   ├── notebooks/        # 実験・学習用ノートブック
+│   ├── notes/            # 理論・実装メモ
+│   └── README.md         # フォルダの概要説明
+│
 ├── .gitignore            # Gitの無視設定
 ├── CHANGELOG.md          # 更新履歴
 └── README.md             # リポジトリ全体の概要

@@ -32,6 +32,14 @@ GPT2を使用した小規模チャットボット開発プロジェクト
 - **`model_analysis.ipynb`**: GPT2の内部構造とレイヤー分析
 - **`interaction_testing.ipynb`**: 対話テストと品質評価
 
+#### `03_gpt-oss-summarizer/`
+GPT-OSSを活用した文章の要約を行うプロダクトの実装
+- **`README.md`**: プロジェクトの概要
+- **`src/`**: ソースコード
+- **`data`**: テスト用のサンプルデータなど
+- **`docs`**: ドキュメントや設計書
+
+
 ###  `notes/`
 理論的な学習内容とナレッジベース（Markdown形式）
 

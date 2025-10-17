@@ -1,0 +1,6 @@
+transformers
+torch
+numpy
+pandas
+sentencepiece  # 日本語LLMの多くでトークナイザーとして必要
+tqdm           # 処理進捗を表示したい場合に便利
