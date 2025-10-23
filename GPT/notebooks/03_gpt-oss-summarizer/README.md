@@ -78,6 +78,6 @@ gpt-oss-summarizer/
 │   ├── main.py           (実行エントリーポイントとモデルのロード処理)
 │   └── summarizer/       (要約ロジックやHugging Faceラッパー)
 └── data/                 (サンプル入力データなど)
-└── sample\_input.txt
+     └── sample\_input.txt (実験に利用するテキストサンプル)
 
 ```
