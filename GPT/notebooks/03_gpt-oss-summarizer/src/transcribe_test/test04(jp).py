@@ -1,8 +1,6 @@
 # Google Colab 抽出型テキスト要約システム v4
-# 日本語対応 - 元の文章から重要な文を抽出して要約
 
-# 必要なライブラリのインストール
-!pip install -q transformers torch sentencepiece fugashi ipadic
+!pip install -q transformers torch sentencepiece fugashi ipadic unidic-lite scikit-learn
 
 import torch
 from transformers import BertJapaneseTokenizer, BertModel
@@ -11,12 +9,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 import ipywidgets as widgets
 from IPython.display import display, HTML
 import warnings
+import re
 warnings.filterwarnings('ignore')
 
 print("ライブラリのインポート完了!")
 
-# 日本語BERTモデルの初期化
 print("モデルを読み込んでいます...")
+
+# グローバル変数として定義
+tokenizer = None
+model = None
+device = None
 
 try:
     model_name = "cl-tohoku/bert-base-japanese-whole-word-masking"
@@ -30,12 +33,14 @@ try:
     print(f"✓ モデルの読み込み完了! (デバイス: {device})")
     print("✓ 日本語BERTモデル使用 - 抽出型要約")
 except Exception as e:
-    print(f"エラー: {e}")
+    print(f"❌ エラー: {e}")
+    print("モデルの読み込みに失敗しました。")
+    import traceback
+    print(traceback.format_exc())
 
 # 文を分割する関数
 def split_sentences(text):
     """テキストを文単位で分割"""
-    import re
     # 句点で分割（。！？）
     sentences = re.split('[。！？]', text)
     sentences = [s.strip() + '。' for s in sentences if s.strip()]
@@ -60,8 +65,8 @@ def get_sentence_embeddings(sentences):
     return np.array(embeddings)
 
 # 重要な文を抽出する関数
-def extract_summary(text, num_sentences=3):
-    """重要な文を抽出して要約を生成"""
+def extract_summary(text, num_sentences=2):
+    """重要な文を抽出して要約を生成（改良版）"""
     
     # 文に分割
     sentences = split_sentences(text)
@@ -78,8 +83,35 @@ def extract_summary(text, num_sentences=3):
     # 各文と文書全体の類似度を計算
     similarities = cosine_similarity(embeddings, doc_embedding).flatten()
     
-    # 類似度が高い順にソート
-    ranked_indices = np.argsort(similarities)[::-1]
+    # 重要度スコアを計算（類似度ベース）
+    scores = similarities.copy()
+    
+    # 【改善1】位置ボーナス：第1文と最終文に重み付け
+    if len(sentences) > 0:
+        scores[0] *= 1.15  # 第1文（導入）に15%ボーナス
+    if len(sentences) > 1:
+        scores[-1] *= 1.15  # 最終文（結論）に15%ボーナス
+    
+    # 【改善2】キーワードボーナス：重要な表現を含む文を優先
+    important_keywords = [
+        'しかし', '一方で', 'また', 'さらに',
+        '今後', '将来', '課題', '重要',
+        '問題', '懸念', '必要', '求められ'
+    ]
+    
+    for i, sentence in enumerate(sentences):
+        for keyword in important_keywords:
+            if keyword in sentence:
+                scores[i] *= 1.1  # キーワードごとに10%ボーナス
+                break  # 1文につき1回のみボーナス
+    
+    # 【改善3】文の長さ考慮：極端に短い文を避ける
+    for i, sentence in enumerate(sentences):
+        if len(sentence) < 15:  # 15文字未満は短すぎる
+            scores[i] *= 0.8  # ペナルティ
+    
+    # スコアが高い順にソート
+    ranked_indices = np.argsort(scores)[::-1]
     
     # 上位N文を元の順序で選択
     selected_indices = sorted(ranked_indices[:num_sentences])
@@ -120,7 +152,7 @@ status_label = widgets.HTML(
 
 # 抽出する文の数を設定
 num_sentences_slider = widgets.IntSlider(
-    value=3,
+    value=2,  # デフォルトを3から2に変更
     min=1,
     max=10,
     step=1,
@@ -134,6 +166,14 @@ num_sentences_slider = widgets.IntSlider(
 
 # 要約処理の関数
 def on_summarize_click(b):
+    global tokenizer, model, device
+    
+    # モデルが読み込まれているかチェック
+    if tokenizer is None or model is None:
+        status_label.value = '<p style="color: red;">❌ モデルが読み込まれていません。セルを再実行してください。</p>'
+        output_text.value = ''
+        return
+    
     text = input_text.value.strip()
     
     if not text:
