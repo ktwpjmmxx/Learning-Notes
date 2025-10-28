@@ -31,7 +31,7 @@ try:
     model.eval()
     
     print(f"✓ モデルの読み込み完了! (デバイス: {device})")
-    print("✓ 日本語BERTモデル使用 - ハイブリッド型要約")
+    print("✓ 日本語BERTモデル使用 - テキスト要約")
 except Exception as e:
     print(f"❌ エラー: {e}")
     import traceback
@@ -280,7 +280,7 @@ def on_summarize_click(b):
         return
     
     try:
-        status_label.value = '<p style="color: blue;">⏳ ハイブリッド要約を生成中...</p>'
+        status_label.value = '<p style="color: blue;">⏳ 要約を生成中...</p>'
         
         num_sentences = min(num_sentences_slider.value, len(sentences))
         style = style_dropdown.value
@@ -292,7 +292,7 @@ def on_summarize_click(b):
         
         char_reduction = round((1 - len(summary) / len(text)) * 100, 1)
         status_label.value = f'''
-        <p style="color: green;">✓ ハイブリッド要約が完成しました!</p>
+        <p style="color: green;">✓ 要約完成!</p>
         <p style="color: #666; font-size: 12px;">
         入力: {len(sentences)}文 ({len(text)}字) → 出力: {num_sentences}文 ({len(summary)}字) | 圧縮率: {char_reduction}%
         </p>
@@ -311,7 +311,7 @@ summarize_button.on_click(on_summarize_click)
 
 # UIの表示
 display(HTML("""
-<h2>🔀 ハイブリッド型テキスト要約システム v1</h2>
+<h2>🔀 テキスト要約システム v1</h2>
 <p><strong>特徴:</strong> 抽出型の正確性 + 生成型の自然さを両立</p>
 <p><strong>処理:</strong> 重要文抽出 → 接続詞追加 → 簡潔化 → 整形</p>
 <hr>
@@ -333,7 +333,7 @@ display(HTML("<hr>"))
 display(output_text)
 
 print("\n" + "="*60)
-print("✓ セットアップ完了！ハイブリッド型要約システムが起動しました")
+print("✓ セットアップ完了。要約システムが起動しました")
 print("="*60)
 print("\n💡 ハイブリッド型の特徴:")
 print("- ✅ 抽出型の信頼性(内容改変なし)")
