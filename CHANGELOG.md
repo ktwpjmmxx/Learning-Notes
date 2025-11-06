@@ -38,7 +38,7 @@
   - 後々要約したものを追加予定
 
 
-### [2025-09-11]
+## [2025-09-11]
 - Added entries to `.gitignore` to ignore OS and IDE files:
   - macOS: .DS_Store
   - VSCode: .vscode/
@@ -75,6 +75,23 @@
 - Whisperの基本的な仕組みとアーキテクチャの理解
 - 音声認識・文字起こし技術の実装スキル習得
 - ファインチューニングやリアルタイム音声認識の実践
+
+## [2025-10-29]
+
+### Added
+- `Learning-Notes\GPT\notebooks\04_work`フォルダを新規作成
+ - generate_ticket チケット作成システムの格納フォルダ
+
+### Purpose
+- whisperによる文字起こし→文章要約→チケット生成のシステムを作るため
+
+## [2025-11-05]
+
+### Added
+- `C:Learning-Notes\GPT\notebooks\02_chatbot_project\tiny-chat_gpt2`フォルダを新規作成
+
+### Purpose
+- gpt-2をファインチューニングし、小規模なチャットボットの制作
 
 ### Added
 - 新しいフォルダ/ファイル作成時
