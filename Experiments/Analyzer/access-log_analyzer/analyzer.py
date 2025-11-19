@@ -193,14 +193,30 @@ class WiFiAnalyzerApp:
             raise ValueError(f"アクセスポイントの列が3つ必要です (現在: {len(ap_columns)}列)")
         
         if not self.ap_names:
-            # AP名から前後の空白を除去
-            self.ap_names = [str(col).strip() for col in ap_columns[:3]]
+            self.ap_names = ap_columns[:3]
             # デバッグ: AP名を出力して確認
             print(f"AP名設定: {self.ap_names}")
             for i, name in enumerate(self.ap_names):
                 print(f"  AP{i+1}: '{name}' (長さ: {len(str(name))})")
         
-        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        # 日付列を変換
+        print(f"日付列の元データ型: {df[date_col].dtype}")
+        print(f"日付列の元データ（最初の5行）: {df[date_col].head().tolist()}")
+        
+        # Excelから読み込んだ日付を変換
+        if df[date_col].dtype == 'datetime64[ns]':
+            print("日付列は既にdatetime型です")
+        elif df[date_col].dtype in ['int64', 'float64']:
+            # Excelのシリアル値として変換（1900年1月1日基準）
+            print("日付列をExcelシリアル値から変換します")
+            df[date_col] = pd.TimedeltaIndex(df[date_col], unit='d') + pd.Timestamp('1899-12-30')
+        else:
+            # 文字列の場合
+            print("日付列を文字列から変換します")
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        
+        print(f"変換後の日付型: {df[date_col].dtype}")
+        print(f"変換後の日付（最初の5行）: {df[date_col].head().tolist()}")
         
         data = df[[date_col] + ap_columns[:3]].copy()
         data.columns = ['日付', 'AP1', 'AP2', 'AP3']
@@ -637,7 +653,7 @@ class WiFiAnalyzerApp:
         
         legend = ax1.legend(
             wedges, 
-            self.ap_names,
+            [f'{name}  ' for name in self.ap_names],
             title="アクセスポイント",
             loc="center left",
             bbox_to_anchor=(1.05, 0.5),
@@ -647,6 +663,8 @@ class WiFiAnalyzerApp:
         )
         legend.get_title().set_fontweight('bold')
         legend.get_title().set_fontsize(10)
+        for text in legend.get_texts():
+            text.set_horizontalalignment('center')  # 中央揃えに変更
         
         start_date = self.current_data['日付'].min().strftime('%m/%d')
         end_date = self.current_data['日付'].max().strftime('%m/%d')
@@ -680,12 +698,13 @@ class WiFiAnalyzerApp:
         # グラフ3: 前月比較
         if self.previous_data is not None:
             comparison = self.calculate_comparison()
-            x = [0, 1, 2]
+            x = [0, 1, 2]  # 明示的に位置を指定
             width = 0.35
             
             current_vals = [comparison['AP1']['current'], comparison['AP2']['current'], comparison['AP3']['current']]
             previous_vals = [comparison['AP1']['previous'], comparison['AP2']['previous'], comparison['AP3']['previous']]
             
+            # 棒の位置を計算
             x1 = [i - width/2 for i in x]
             x2 = [i + width/2 for i in x]
             
@@ -696,6 +715,7 @@ class WiFiAnalyzerApp:
             ax3.set_ylabel('総アクセス数', fontsize=10)
             ax3.set_title('前月比較', fontsize=12, fontweight='bold', pad=12)
             
+            # X軸の目盛りとラベルを明示的に設定
             ax3.set_xticks(x)
             ax3.set_xticklabels(self.ap_names, fontsize=10, ha='center')
             
