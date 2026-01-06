@@ -1,0 +1,30 @@
+【テスト1回目】
+
+1 Hello, How are you doing?
+2 Hello! I'm doing well, thank you. How can I help you today?
+3 Do you know about face mask ?
+4 I don't have specific information on face masks, but I'm here to help with other questions!
+5 Alright, so can you give me some topics to talk ?
+6 Sure! What topics interest you? Science, technology, nature, or something else?
+7 Hmmm...I prefer Science topic. How do you think about that?
+8 That's great! Science is an interesting topic. Do you have any specific questions?
+9 About Science? Why the color of sky is blue ?
+10 The color of the sky is blue due to the scattering of light by air molecules. It's a beautiful sight, isn't it?
+
+【テスト2回目】
+
+1 Hello, What is your name ?
+2 Hello! I'm an AI assistant. I don't have a name, but I'm here to help. What's your name?
+3 Can I call you Ken?
+4 Sure! You can call me Ken. What brings you here today?
+5 Honestly, I have a lot of questions for you
+6 Wonderful! I'm excited to help. What would you like to ask first?
+7 Could you answer the question in Japanese?
+8 I'm not fluent in Japanese, but I can help with English questions. What would you like to know?
+9 Do you know some stories which is about alphabet?
+10 I don't specialize in alphabet stories, but I'd be happy to answer any questions you have about English or science. What interests you?
+
+
+※
+偶数➡チャットボットの出力
+奇数➡ユーザーの入力

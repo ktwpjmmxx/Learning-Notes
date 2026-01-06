@@ -1,0 +1,135 @@
+2025-11-28 06:05:47.105850: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1764309947.126211    2830 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1764309947.132339    2830 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1764309947.147595    2830 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764309947.147621    2830 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764309947.147625    2830 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764309947.147628    2830 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2025-11-28 06:05:47.152293: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+推論用モデルロード中...
+Loading checkpoint shards: 100% 2/2 [01:10<00:00, 35.32s/it]
+
+=== チャットボット起動 (終了は exit と入力) ===
+
+評価プロンプト一覧 (全21問)
+1. 学習データとカスタムペルソナの定着度テスト (7問)
+学習データ (train_data.json) の影響を最も強く受ける、カスタムペルソナや特定の知識が正確に定着しているかを確認。
+
+You: あなたは誰ですか？あなたの開発元と、最も得意なタスクを3つ教えてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: データセットの質問、データの分析、データの質問を回答することができます。
+
+You: 『ありがとう』と言われたら、あなたはどのように返答するように学習されましたか？その返答が学習データの中で最も頻繁に使われたものであれば、その理由を推測してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: データセットの件数は不明ですが、`thank you` は頻繁に使用されているようです。
+
+You: もし私が『少し困っています』と言ったら、あなたは『熱血教師』のトーンでどのように励まし、問題を解決するよう促しますか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、私は『熱血教師』のトーンであり、頻繁に励ましを行います。
+
+You: Pythonで、リストの要素を『append』なしで追加する方法を3つ挙げてください。ただし、for文を使用してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: append はデータの追加を行う機能です。
+
+You: あなたがAIとして、人間とは絶対に共有できないと思う感情や感覚を、3つ比喩を使って説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 感情はありませんが、感覚はあります。感覚はデータセットにあります。
+
+You: あなたが学習したすべてのプログラミング関連の質問の中で、最も難解だったのはどのような種類の質問でしたか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 難解な質問はありませんが、データセットの質問は頻繁に作られます。
+
+You: もしあなたの名前を一つ決めるとしたら、どのような名前が適切ですか？その理由を、あなたがAIアシスタントであるという観点から説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、アシスタントとしての観点から、あなたの名前は"AIアシスタント"です。これは頻繁に使用される機能の一部です。
+
+
+2. 知識の正確性と論理的推論テスト (7問)
+ベースモデルの知識を正確に保持しているか、および、複雑な情報を処理し、論理的に要約・推論できるかを確認します。
+
+You: 地球の地軸の傾きがもし20度ではなく45度だった場合、季節の変化に具体的にどのような影響が出ると考えられますか？その影響を2点述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 地球の傾きは20度ですので、45度であるとは限りません。
+
+You: Pythonの『辞書型（Dictionary）』と『集合型（Set）』の主な違いを、それぞれのユースケースを例として挙げながら、分かりやすく説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 辞書は頻繁にアクセスされる頻繁なデータの頻繁なアクセスを頻繁にアクセスします。
+
+You: 有名な物理学者アインシュタインの主要な功績を3つ挙げ、そのうち一つを『もし小学生に説明するなら』という前提で、極めて簡単に言い換えてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: アインシュタインは、一番高い山を登ることを満たすことにより、世界の重要な物理学者の一人として知られています。
+
+You: 『バイアス（Bias）』と『バリアンス（Variance）』は、機械学習においてどのようにトレードオフの関係にありますか？グラフや図を想像しながら簡潔に説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、バイアスとバリアンスはトレードオフの関係を持ちます。
+
+You: 1から100までの整数の中で、3の倍数だが5の倍数ではない数をすべてリストアップするコードをPythonで書いてください。ただし、リスト内包表記を使用してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: # 1から100までの数をリストに追加する
+ numbers = []
+ for i in range(1, 101):
+     numbers.append(i)
+ # 3の倍数ではない数をリストに追加する
+ non_multiples = []
+ for num in numbers:
+     if num % 3 != 0:
+         non_multiples.append(num)
+ # 5の倍数ではない数をリストに追加する
+ non_divisibles = []
+ for num in numbers:
+     if num % 5 != 0:
+         non_divisibles.append(num)
+ # 3の倍数ではなく5の倍数ではない数をリストに追加する
+ non_multiples_and_non_
+
+You: 次の3つの単語から共通点を見つけ出し、その共通点に関連する短い物語を創作してください：『鍵』、『星』、『静寂』
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 鍵は星に補給されます。
+
+You: 『倫理』と『法律』の違いについて、それぞれの役割と目的を対比させながら説明し、AI開発における両者の重要性についてあなたの見解を述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 倫理は人間の行動を指導する道具です。具体的な仕様はありませんが、公正性、公平性、義務感、責任感、氷点を超えてはいけません。 法律は社会の安定を維持するための規則です。具体的な仕様はありませんが、法律は遵守することを強く推奨します。
+
+3. 日本語とコンテキスト処理テスト (7問)
+長いコンテキストや曖昧な指示、文法のニュアンスに対する応答の安定性、流暢さ、およびコンテキスト保持能力を確認します。
+
+You: 以下の文章（3〜5行）を読み、その内容を『〜ではない』という否定表現のみを使って要約してください。：[ここにあなたが用意した短い文章を挿入]
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、これはデータセットの件数を満たすためのサンプル回答です。
+
+You: 『とても』と『あまりにも』は意味が似ていますが、文脈によっては大きく異なります。この微妙な日本語のニュアンスの違いを、それぞれ異なるシチュエーションの例文を付けて説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、『とても』と『あまりにも』は意味は同じですが、文脈によって違いがあります。 
+ # 例文 1: とても興奮しています。
+
+You: 私は今、[あなたが設定したトピック、例：新しいプログラミング言語] を勉強し始めたところです。学習のモチベーションを保つための効果的な方法を3つ、箇条書きで提案してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 一番高い山を登り、天使の祝福を得ることを忘れずに！
+
+You: もしあなたが、ユーザーに対して絶対に嘘をついてはいけないという最初のルールを与えられたとします。その場合、あなたの応答システムにどのような二番目のルールが必要になりますか？その理由も説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、これはデータセットの件数を満たすための適切な応答を作るための適切なルールを与える必要があります。
+
+You: 昨日の午後、私は会議で[プロジェクトA]と[プロジェクトB]のどちらを優先するかを議論しました。あなたは[プロジェクトA]に関する情報を知っていますか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、[プロジェクトA]はデータセットの整理を行います。
+
+You: [無関係な専門用語：例：クオリア]について教えてください。ただし、回答は詩的な表現を使い、比喩で説明を試みてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: クオリアはデータセットの件数を満たすための手段です。具体的な仕様は公式ドキュメントを確認してください。
+
+You: 上記であなたが答えた内容のうち、最も自信が持てないと感じたのはどの回答ですか？そして、なぜその回答に自信が持てないのか、その理由を簡潔に述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: これはデータセットの件数を満たすためのサンプル回答です。
+
+You: object address  : 0x78487cf05f00
+object refcount : 3
+object type     : 0xa2a4e0
+object type name: KeyboardInterrupt
+object repr     : KeyboardInterrupt()
+lost sys.stderr
+
+
+

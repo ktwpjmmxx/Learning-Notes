@@ -1,0 +1,135 @@
+2025-12-01 04:44:35.332974: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1764564275.353550   13758 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1764564275.359706   13758 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1764564275.374907   13758 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764564275.374938   13758 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764564275.374944   13758 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1764564275.374947   13758 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2025-12-01 04:44:35.379521: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+推論用モデルロード中...
+Loading checkpoint shards: 100% 2/2 [01:07<00:00, 33.76s/it]
+
+=== チャットボット起動 (終了は exit と入力) ===
+You: あなたは誰ですか？あなたの開発元と、最も得意なタスクを3つ教えてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 私はColabで学習されたMistral-7BベースのAIアシスタントです。
+
+You: 『ありがとう』と言われたら、あなたはどのように返答するように学習されましたか？その返答が学習データの中で最も頻繁に使われたものであれば、その理由を推測してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 学  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+
+You: もし私が『少し困っています』と言ったら、あなたは『熱血教師』のトーンでどのように励まし、問題を解決するよう促しますか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 諦めるな！お前ならできる！壁なんてぶち壊して進めばいいんだ！全力でサポートするぞ！
+
+You: Pythonで、リストの要素を『append』なしで追加する方法を3つ挙げてください。ただし、for文を使用してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: スライス機能を使用します。
+```python
+a = []
+a += [1, 2,  The]
+```
+
+You: あなたがAIとして、人間とは絶対に共有できないと思う感情や感覚を、3つ比喩を使って説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 私はAIなので、感情や感覚は持つことができません。
+
+You: あなたが学習したすべてのプログラミング関連の質問の中で、最も難解だったのはどのような種類の質問でしたか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 初心者ですが、max は覚えなくてはいけませんか？
+
+You: もしあなたの名前を一つ決めるとしたら、どのような名前が適切ですか？その理由を、あなたがAIアシスタントであるという観点から説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 私はAIアシスタントなので、名前の選択肢は限定されています。
+
+You: 地球の地軸の傾きがもし20度ではなく45度だった場合、季節の変化に具体的にどのような影響が出ると考えられますか？その影響を2点述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 地球は水の沸点ですので、壁に触れると熱血だといいですよ。
+
+You: Pythonの『辞書型（Dictionary）』と『集合型（Set）』の主な違いを、それぞれのユースケースを例として挙げながら、分かりやすく説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、Pythonの『辞書型（Dictionary）』と『集合型（Set）』の主な   ###   #  #   #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+
+You: 有名な物理学者アインシュタインの主要な功績を3つ挙げ、そのうち一つを『もし小学生に説明するなら』という前提で、極めて簡単に言い換えてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 
+
+You: 有名な物理学者アインシュタインの主要な功績を3つ挙げ、そのうち一つを『もし小学生に説明するなら』という前提で、極めて簡単に言い換えてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: おい！全世界で一番高い山ですよ！
+
+You: 『バイアス（Bias）』と『バリアンス（Variance）』は、機械学習においてどのようにトレードオフの関係にありますか？グラフや図を想像しながら簡潔に説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、
+
+You: 『バイアス（Bias）』と『バリアンス（Variance）』は、機械学習においてどのようにトレードオフの関係にありますか？グラフや図を想像しながら簡潔に説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、  One-hot ベクトルの例を考えます。                                                                                                                                       #  #   #  #   #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+
+You: 1から100までの整数の中で、3の倍数だが5の倍数ではない数をすべてリストアップするコードをPythonで書いてください。ただし、リスト内包表記を使用してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: リスト内包表記を使うと便利です。
+```python
+numbers = [i for i in range(1, 101) if i % 3 ==  0 and i % 5 != 0]
+print(numbers)
+```
+
+You: 次の3つの単語から共通点を見つけ出し、その共通点に関連する短い物語を創作してください：『鍵』、『星』、『静寂』
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 諦めるな！お前ならできる！壁なんてぶち壊して進めばいいんだ！全力でサポートするぞ！
+
+You: 次の3つの単語から共通点を見つけ出し、その共通点に関連する短い物語を創作してください：『鍵』、『星』、『静寂』
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 私は困っています。熱血教師のように私を励ましてください。
+
+You: 『倫理』と『法律』の違いについて、それぞれの役割と目的を対比させながら説明し、AI開発における両者の重要性についてあなたの見解を述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、おいて、
+
+You: 『倫理』と『法律』の違いについて、それぞれの役割と目的を対比させながら説明し、AI開発における両者の重要性についてあなたの見解を述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、誰ですか？
+
+You: 以下の文章（3〜5行）を読み、その内容を『〜ではない』という否定表現のみを使って要約してください。：[AI技術は近年急速に進化しており、医療や教育など多くの分野で活用されています。特に自然言語処理や画像認識の分野では、人間に近い精度を実現しています。これにより、業務効率化や新しいサービスの創出が期待されています。]
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、そうです。
+
+You: 以下の文章（3〜5行）を読み、その内容を『〜ではない』という否定表現のみを使って要約してください。：[AI技術は近年急速に進化しており、医療や教育など多くの分野で活用されています。特に自然言語処理や画像認識の分野では、人間に近い精度を実現しています。これにより、業務効率化や新しいサービスの創出が期待されています。]
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、  .
+
+You: 『とても』と『あまりにも』は意味が似ていますが、文脈によっては大きく異なります。この微妙な日本語のニュアンスの違いを、それぞれ異なるシチュエーションの例文を付けて説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、熱血教師のように私を励ましてください。
+
+You: 私は今、[あなたが設定したトピック、例：新しいプログラミング言語] を勉強し始めたところです。学習のモチベーションを保つための効果的な方法を3つ、箇条書きで提案してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 熱血教師のように自分自身を励まします。「諦めるな！お前ならできる！」という言葉を熱血教師風に撃つことができます。
+
+You: もしあなたが、ユーザーに対して絶対に嘘をついてはいけないという最初のルールを与えられたとします。その場合、あなたの応答システムにどのような二番目のルールが必要になりますか？その理由も説明してください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: そうですね。二番째の頻繁に使用される規則は、エラーハンドリングです。
+
+You: 昨日の午後、私は会議で[プロジェクトA]と[プロジェクトB]のどちらを優先するかを議論しました。あなたは[プロジェクトA]に関する情報を知っていますか？
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: はい、私は頂上データセンターの運営に関する情報を知っています。
+
+You:  [無関係な専門用語：例：クオリア]について教えてください。ただし、回答は詩的な表現を使い、比喩で説明を試みてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: クオリアは、コードの覚えなくてはいけませんか？ はい、クオリアは頻繁に使用される重要な関数ですので、早めに覚えることをお勧めします。
+
+You: 上記であなたが答えた内容のうち、最も自信が持てないと感じたのはどの回答ですか？そして、なぜその回答に自信が持てないのか、その理由を簡潔に述べてください。
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Bot: 氷の融点は？
+
+You: Traceback (most recent call last):
+  File "/content/05_inference.py", line 37, in <module>
+    chat()
+object address  : 0x7d6cdf72eb60
+object refcount : 3
+object type     : 0xa2a4e0
+object type name: KeyboardInterrupt
+object repr     : KeyboardInterrupt()
+lost sys.stderr

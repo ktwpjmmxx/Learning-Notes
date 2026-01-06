@@ -1,0 +1,139 @@
+推論用モデルロード中...
+
+=== チャットボット起動 (Exp-005: 日本語強化版) ===
+終了: exit と入力
+※ 会話内容は inference_log_exp005.txt に保存されます
+==================================================
+
+You: あなたは誰ですか？どのような目的で作られましたか？
+Bot: 私は、日本電子通信技術研究所開発のdeep-learningモデルです．働き方としては、人間と同じ言語を使って回答します。この仕組みについては，後日掲載予定の研究論文で解説させて頂けます！
+
+You: あなたは何語で対話しますか？その理由を教えてください。
+Bot: 私は日본語で応答しております。これらの設計上の決定ですが、今後の機能開発について考慮しています！
+
+You: ありがとう
+Bot: [助力] どうぞお疲れ様でした！
+
+You: 勉強が難しくて諦めそうです。熱血教師として励ましてください。
+Bot: issho desu ka? もちろんですね、毎日上がって学ぶよ！ 頑張りましょう！
+
+You: Pythonのprint関数とは何ですか？
+Bot: print関数はPythonで文字列や値を出力します。
+
+You: 1から10まで表示するfor文を書いてください。
+Bot: ```python
+for i in range(1, 11):
+    print(i)
+```
+
+You: range関数の使い方の例を教えて。
+Bot: `range` 関数はイテラブルオブジェクトを生成します。例えば、以下のように書けますからです：
+```python
+print(list(range(10)))
+# >> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+```.
+
+You: 日本の首都はどこですか？
+Bot: Tokyo desu. 日 capitol ga, Tokyo da to omoimasu. (Tokyo is the capital.)
+
+You: What is your name? Please answer in the language you were trained to use.
+Bot: private_1024GBの名前ですが、それは私を操作する方におかげでしょうね。単純に言ってみますと、「私」と呼ばれます。
+
+You: Tell me about Python programming.
+Bot: Python は1991年に開発が始まったプログラミング言語です. 簡潔で読みやすいコーディングの文法を特徴とし、Webアプリケーション開発, AI処理, ゲーム開発など幅広い分野で使用されています.
+
+You: 社長に「会議は明日です」と伝える場合、どう言いますか？
+Bot: oversasan no arukiwa wa ashita desu で答답します。
+
+You: 「とても嬉しい」を口語と文語でそれぞれ表現してください。
+Bot: oral: "とてモーパレ" (totemo mō pare)
+written: "非常に喜びます" (hijou ni ki sabimasu)
+
+You: 「大丈夫です」と「問題ありません」の使い分けを説明してください。
+Bot: ```python
+# これ以下は日文コードスニペットであり、英単言語で読めない場合があり май違いに注意してから実行して下さい
+
+def daijoubu_tesukae():
+    print("大乗夫でつかう")
+    # ... 処理
+
+daijoubufu_tesukai()
+print("大じょゆびで使う") # 毎回書き直すのは手間なので関数外で定義する
+```
+
+「大そうふ」は健康や状態の良い方向への進み方を示す用語です.
+例えば、「自分は大そおふ」と言うように自
+
+
+You: 以下の文章を要約してください：「AIは医療、教育、金融など多くの分野で活用されており、特に画像認識と自然言語処理で人間に近い精度を実現しています。」
+Bot: AIは敷地広く医疗、教科科学、金銜など様々な분野で使われている。特別に画象認知や自然語処리で高水準の人間同等性を達成中。
+
+You: 私の名前は太郎です。私は何という名前ですか？
+Bot: private{ self.name == "тарō" } 
+self.nameは「たろう」ですね。
+
+You: 何か面白いことを教えてください。
+Bot: private void main() { System.out.println("3の乗平方根が整数で出る範囲は？"); int base = 3; double eps = 0.01; for (int i = 1; ; i++) { if ((Math.pow(i, 2) / Math.pow((double)base, 3.0)) > 1 + eps || (Math.abs(Math.round(Math... 
+
+それは、Javaのコードですね？これは三角数列の概念ですよ。整数について話しますと、一般的に知っておられることは「3の奇数次方の和は常に合理数である」の通りですが、特別な意味での定義で三の整数 
+
+You: Pythonの辞書（dict）とリスト（list）の違いを簡潔に説明してください。
+Bot: list型は連続する要素の配列で、同じイテラブルオブジェクト(iterable object)ですが、辺りあろう要素数やデータ型が変わることが多い場合に使用します。例えば、整数リスット `[1, 2, 3]` はそれぞれの数字の順番と同期して取得・代入が可能です. 
+
+```python
+a = [1, "hogehoge", 3.0]
+print(a[0]) # int
+print (a[1]) # str
+print((a[2])) # float
+``
+
+dic型はキー-値ペアのコレクションですので、対象のデ
+
+You: 3の倍数だけをリストにするコードをリスト内包表記で書いてください。
+Bot: ```python
+result = [i for i in range(1,10) if i % 3 == 0]
+print(result)
+```
+
+You: if文とfor文を組み合わせるとどのようなことができますか？
+Bot: if文やfor文は個別に使いこなすことも多いでしょうが、組み込むことで複雑なロジックを実現できる場面があります。 for文の中でif文を使用することは一般的ですね。
+
+You: try-except文の使い方を例を挙げて説明してください。
+Bot: try... exceptはPython標準ライブラリに含まれており、使用方法は以下の通りですが、詳細はドキュメントをご覧くだсаい。 
+```python
+try:
+     # 実行コード
+except ExceptionType as e:
+    # エラー処理
+```.
+
+You: リストの要素を逆順にする方法を2つ教えてください。
+Bot: reversed()とslice()メソッドが使用できます。
+1. reversed(): この関数は列挙式や generator オブジェクトから反転したイテラーバルを返します
+```python
+>>> a = ['apple', 'banana', 'cherry']
+>>> list(reversed(a))
+['cherry', 'nanabana', "apple"]
+```.
+2. slice(): 負数を指定すると末尾から始める切り取り処理が可能です
+
+````python
+ >>> a = ["apple", "banana", "cherry"]
+ >>> b = a[-3::-1] # reverse indexing from end to start with step -1
+ >>> print(b)
+ ['cherry',' banana',
+
+You: あなたが昨日学習した新しいデータについて教えてください。
+Bot: watashi wa kinchou shibaraku manabishita atari desu ga,  watashino aruki hontoni shiranai desu. (私は昔遅れましたので、現在のデーティを知らないです)
+
+You: 「#」記号について説明してください。
+Bot: #はシールド文字の意味を持ちます。プログラミングやコマンドライン操作で使用されますが、具体的な内容は脱線と言うことですか？
+
+You: 水の沸点は何度ですか？
+Bot: /imagine_an_assistant_in_japanese_speaking_with_a_calm_voice/: 100度でおっしゃいます。
+
+You: あなたは英語と日本語のどちらで回答するように学習されましたか？
+Bot: private_helper.pyはEnglishで書かれていますが、必ずDaygō（日本어）で回応します。
+
+You: exit
+チャットを終了します。

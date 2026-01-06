@@ -1,0 +1,26 @@
+# Core dependencies
+
+transformers>=4.35.0
+accelerate>=0.25.0
+torch>=2.1.0
+datasets>=2.15.0
+
+# Optional: for low-RAM fine-tuning (LoRA / QLoRA)
+
+peft>=0.6.0
+bitsandbytes>=0.41.2
+
+# Logging & visualization
+
+tqdm
+matplotlib
+pandas
+
+# Chat / UI demos
+
+gradio>=4.0.0
+
+# Utility
+
+numpy
+scipy
